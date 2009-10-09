@@ -1,4 +1,10 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
+require 'rubygems'
+require 'sinatra'
 
-puts "Hello World"
+get '/' do
+  "Hello World!"+ "I'm running version " + Sinatra::VERSION
+end
+
+get '/hello/?' do
+  "Hello again!"
+end
