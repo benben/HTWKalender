@@ -46,16 +46,21 @@ get '/' do
       event[1] = splitweeks(event[1])
       event[2] = maketime(event[2])
       event[3] = maketime(event[3])
-      event[9] = makedate(event[9])
+      #delete the last 2 columns "Bemerkungen" and "Gebucht am"
+      event.delete(8)
+      event.delete(9)
     end
 
     cal = Calendar.new
 
     @events.each do |event|
-      event[1].each do
+      event[1].each do |week|
         cal.event do
-          dtstart     DateTime.new(event[9][0].to_i, event[9][1].to_i, event[9][2].to_i, event[2][0].to_i, event[2][1].to_i)
-          dtend       DateTime.new(event[9][0].to_i, event[9][1].to_i, event[9][2].to_i, event[3][0].to_i, event[3][1].to_i)
+          #to calculate the Time with DateTime.commercial, we need the actual Year
+          #the weeknums differ from the real calenderweeknums
+          #we fix this with the getyear and getweek function
+          dtstart     DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
+          dtend       DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
           summary     event[5]
         end
       end
@@ -73,11 +78,6 @@ def maketime(time)
   time.split(":")
 end
 
-def makedate(date)
-  split = date.split("/")
-  split.reverse!
-end
-
 def splitweeks(week)
   a = []
   split = week.split(", ")
@@ -92,4 +92,20 @@ def splitweeks(week)
     end
   end
   a
+end
+
+def getyear(week)
+  if week.to_i <= 53 then
+    return 2009
+  else
+    return 2010
+  end
+end
+
+def getweek(week)
+  week = week.to_i
+  if week > 53 then
+    week -= 53
+  end
+  week
 end
