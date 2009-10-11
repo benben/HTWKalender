@@ -71,7 +71,8 @@ get '/choose' do
       end
     end
 
-    @cal_string = cal.to_ical.toutf8
+    #unpack and pack convert the iso-8859-1 to utf-8
+    @cal_string = cal.to_ical.unpack('C*').pack('U*')
 
   rescue OpenURI::HTTPError => e
     puts e
