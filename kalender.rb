@@ -20,23 +20,64 @@ get '/choose' do
   erb :choose
 end
 
-get '/test/*' do
-  params['splat'].inspect
+get '/get/:link' do
+  #TODO hier mit splat_to_array auswechseln
+  p = params['post'].keys
+  p.map! do |n|
+    n = n.to_i
+  end
+  wanted = []
+
+  for i in 0..p.sort.last
+    if p.include?(i) then
+      wanted.push(1)
+    else
+      wanted.push(0)
+    end
+  end
+  @permalink = make_permalink(wanted)
+  @downloadlink = make_downloadlink(params[:link],wanted)
+  erb :get
 end
 
-get '/get/:link' do
-  make_cal(only_use_wanted_events(get_events(params[:link]),params['post']))
+get '/get/:link/*' do
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
+end
+
+get '/file/:link/*.ics' do
+  content_type 'application/octet-stream', :charset => 'utf-8'
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
+end
+
+#returns an array of integers
+def splat_to_array(splat)
+  wanted = splat[0].split("/")
+
+  wanted.map! do |n|
+    n = n.to_i
+  end
+  wanted
+end
+
+#returns a String which is the downloadlink
+def make_downloadlink(link,wanted)
+  "http://" + request.host + "/file/" + link + "/" + wanted.join("/") + ".ics"
+end
+
+#returns a String which is the permalink
+def make_permalink(wanted)
+  "http://" + request.host + request.path_info + "/" + wanted.join("/")
 end
 
 #deletes all unwanted events and returns an Array
-def only_use_wanted_events(events,params)
+#wanted must be an Array of ones and zeros
+def only_use_wanted_events(events,wanted)
   wanted_courses = []
   new_events = []
   courses = get_courses(events) #get all courses from the events array
-  wanted_keys = params.keys #get only the keys from the param hash
 
-  wanted_keys.each do |w| #only push wanted courses to the wanted_courses array
-    wanted_courses.push(courses[w.to_i])
+  courses.each_index do |w| #only push wanted courses to the wanted_courses array
+    wanted_courses.push(courses[w]) if wanted[w] == 1
   end
 
   wanted_courses.each do |wanted_event|
@@ -68,17 +109,13 @@ def make_cal(events)
   events.each do |event|
     event[1].each do |week|
       cal.event do
-        #to calculate the Time with DateTime.commercial, we need the actual Year
-        #the weeknums differ from the real calenderweeknums
-        #we fix this with the getyear and getweek function
-        dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
-        dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
+        dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0) #to calculate the Time with DateTime.commercial, we need the actual Year
+        dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
         summary     event[5]
       end
     end
   end
-  #generate ical text
-  cal.to_ical
+  cal.to_ical #generate ical text
 end
 
 #returns an array with all calendar data
@@ -92,16 +129,16 @@ def get_events(link)
     doc.each do |table|
       weekday = doc.index(table)
       table = (table/"tr")
-      #delete every table header
+
       table.each_index do |n|
-        table.slice!(n) if table[n].to_s.include? "Planungswochen"
+        table.slice!(n) if table[n].to_s.include? "Planungswochen" #delete every table header
       end
 
       table.each do |row|
         n = 0
         event = Hash.new
-        #add the weekday num before filling the hash with the other stuff
-        event.store(n,weekday)
+
+        event.store(n,weekday)#add the weekday num before filling the hash with the other stuff
         n += 1
 
         (row/"td").each do |col|
@@ -116,11 +153,9 @@ def get_events(link)
       event[1] = split_weeks(event[1])
       event[2] = make_time(event[2])
       event[3] = make_time(event[3])
-      #unpack and pack convert the iso-8859-1 to utf-8
-      event[5] = event[5].unpack('C*').pack('U*')
+      event[5] = event[5].unpack('C*').pack('U*') #unpack and pack convert the iso-8859-1 to utf-8
       event[7] = event[7].unpack('C*').pack('U*')
-      #delete the last 2 columns "Bemerkungen" and "Gebucht am"
-      event.delete(8)
+      event.delete(8) #delete the last 2 columns "Bemerkungen" and "Gebucht am"
       event.delete(9)
     end
 
