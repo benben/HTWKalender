@@ -4,6 +4,7 @@ require 'hpricot'
 require 'open-uri'
 require 'icalendar'
 require 'date'
+require 'kconv'
 
 include Icalendar
 
@@ -12,14 +13,18 @@ get '/' do
   @p = params['post'].inspect
 
   params['post'] ||= {'jahrgang' => '', "studiengang" => "", "seminargruppe" => "", "abschluss" => ""}
+  erb :index
+end
+
+get '/choose' do
   begin
     @link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{params['post']['jahrgang']}#{params['post']['studiengang']}#{params['post']['seminargruppe']}-#{params['post']['abschluss']}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
     @doc = Hpricot(open(@link), :xhmtl_strict)
     @doc = (@doc/"table[@border='1']")
     @events = []
 
-    @doc.each do |table|    
-      weekday = @doc.index(table)     
+    @doc.each do |table|
+      weekday = @doc.index(table)
       table = (table/"tr")#.to_a
 
       #delete every table header
@@ -66,12 +71,11 @@ get '/' do
       end
     end
 
-    @cal_string = cal.to_ical
+    @cal_string = cal.to_ical.toutf8
 
   rescue OpenURI::HTTPError => e
     puts e
   end
-  erb :index
 end
 
 def maketime(time)
