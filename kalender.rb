@@ -11,23 +11,12 @@ include Icalendar
 get '/' do
   @studiengang = ["AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
   @p = params['post'].inspect
-
   params['post'] ||= {'jahrgang' => '', "studiengang" => "", "seminargruppe" => "", "abschluss" => ""}
   erb :index
 end
 
 get '/choose' do
-  #@courses = getcourses(getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss']))).inspect
-
-  #l = makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])
-
-  #e = getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss']))
-
   @courses = getcourses(getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])))
-  #puts @courses.class
-
-  #puts @courses.inspect
-
   erb :choose
 end
 
@@ -65,7 +54,6 @@ def makecal(events)
       end
     end
   end
-
   #unpack and pack convert the iso-8859-1 to utf-8
   cal.to_ical.unpack('C*').pack('U*')
 end
@@ -80,8 +68,7 @@ def getevents(link)
 
     doc.each do |table|
       weekday = doc.index(table)
-      table = (table/"tr")#.to_a
-
+      table = (table/"tr")
       #delete every table header
       table.each_index do |n|
         table.slice!(n) if table[n].to_s.include? "Planungswochen"
