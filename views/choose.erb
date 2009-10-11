@@ -19,7 +19,7 @@
         <%  @courses.each_index do |i| %>
         <tr>
           <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
-          <td><%= @course[i] %></td>
+          <td><%= @courses[i] %></td>
         </tr>
         <% end %>
       </table>
