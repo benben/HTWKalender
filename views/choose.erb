@@ -10,16 +10,16 @@
     <p>Hier kannst du festlegen wie dein Kalender am Ende aussehen soll.</p>
     <h2>Veranstaltungen</h2>
     <p>Markiere einfach alle Veranstaltungen, die angezeigt werden sollen!</p>
-    <form method="get" action="/get/06MT-D">
+    <form method="get" action="/get/<%= @link %>">
       <table border="1" cellspacing="0" cellpadding="2">
         <tr>
           <td>&nbsp;</td>
           <td>Veranstaltung</td>
         </tr>
-        <% @courses.sort.each do |course| %>
+        <%  @courses.each_index do |i| %>
         <tr>
-          <td><input type="checkbox" name="<%= course %>" value="1" /></td>
-          <td><%= course %></td>
+          <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
+          <td><%= @course[i] %></td>
         </tr>
         <% end %>
       </table>

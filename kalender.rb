@@ -14,30 +14,55 @@ get '/' do
 end
 
 get '/choose' do
-  @courses = getcourses(getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])))
+  @link = make_link(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])
+  @courses = get_courses(get_events(@link))
+
   erb :choose
 end
 
+get '/test/*' do
+  params['splat'].inspect
+end
+
 get '/get/:link' do
-  makecal(getevents(params[:link]))
+  make_cal(only_use_wanted_events(get_events(params[:link]),params['post']))
+end
+
+#deletes all unwanted events and returns an Array
+def only_use_wanted_events(events,params)
+  wanted_courses = []
+  new_events = []
+  courses = get_courses(events) #get all courses from the events array
+  wanted_keys = params.keys #get only the keys from the param hash
+
+  wanted_keys.each do |w| #only push wanted courses to the wanted_courses array
+    wanted_courses.push(courses[w.to_i])
+  end
+
+  wanted_courses.each do |wanted_event|
+    events.each_index do |event_index|
+      new_events.push(events[event_index]) if events[event_index][5] == wanted_event
+    end
+  end
+  new_events
 end
 
 #returns a String for the URL
-def makelink(year,study,group,degree)
-  link = year+study+group+"-"+degree
+def make_link(year,study,group,degree)
+  year+study+group+"-"+degree
 end
 
 #returns an Array with all Courses
-def getcourses(events)
+def get_courses(events)
   courses = []
   events.each do |event|
-    courses.push(event[5].unpack('C*').pack('U*'))
+    courses.push(event[5])
   end
-  courses = courses.uniq
+  courses = courses.uniq.sort
 end
 
 #returns a String in iCal Format
-def makecal(events)
+def make_cal(events)
   cal = Calendar.new
 
   events.each do |event|
@@ -46,18 +71,18 @@ def makecal(events)
         #to calculate the Time with DateTime.commercial, we need the actual Year
         #the weeknums differ from the real calenderweeknums
         #we fix this with the getyear and getweek function
-        dtstart     DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
-        dtend       DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
+        dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
+        dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
         summary     event[5]
       end
     end
   end
-  #unpack and pack convert the iso-8859-1 to utf-8
-  cal.to_ical.unpack('C*').pack('U*')
+  #generate ical text
+  cal.to_ical
 end
 
 #returns an array with all calendar data
-def getevents(link)
+def get_events(link)
   begin
     link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
     doc = Hpricot(open(link), :xhmtl_strict)
@@ -88,9 +113,12 @@ def getevents(link)
     end
 
     events.each do |event|
-      event[1] = splitweeks(event[1])
-      event[2] = maketime(event[2])
-      event[3] = maketime(event[3])
+      event[1] = split_weeks(event[1])
+      event[2] = make_time(event[2])
+      event[3] = make_time(event[3])
+      #unpack and pack convert the iso-8859-1 to utf-8
+      event[5] = event[5].unpack('C*').pack('U*')
+      event[7] = event[7].unpack('C*').pack('U*')
       #delete the last 2 columns "Bemerkungen" and "Gebucht am"
       event.delete(8)
       event.delete(9)
@@ -104,12 +132,12 @@ def getevents(link)
 end
 
 #retuns an Array with Hour and Minute
-def maketime(time)
+def make_time(time)
   time.split(":")
 end
 
 #returns an Array with all CWeeks
-def splitweeks(week)
+def split_weeks(week)
   a = []
   split = week.split(", ")
   split.each do |n|
@@ -126,7 +154,7 @@ def splitweeks(week)
 end
 
 #just a Hack, returns 2010 if week is > 53
-def getyear(week)
+def get_year(week)
   if week.to_i <= 53 then
     return 2009
   else
@@ -135,7 +163,7 @@ def getyear(week)
 end
 
 #just a Hack, change Planweeks to real CWeeks, example: 57 => 4
-def getweek(week)
+def get_week(week)
   week = week.to_i
   if week > 53 then
     week -= 53
