@@ -17,14 +17,69 @@ get '/' do
 end
 
 get '/choose' do
-  begin
-    @link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{params['post']['jahrgang']}#{params['post']['studiengang']}#{params['post']['seminargruppe']}-#{params['post']['abschluss']}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
-    @doc = Hpricot(open(@link), :xhmtl_strict)
-    @doc = (@doc/"table[@border='1']")
-    @events = []
+  #@courses = getcourses(getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss']))).inspect
 
-    @doc.each do |table|
-      weekday = @doc.index(table)
+  #l = makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])
+
+  #e = getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss']))
+
+  @courses = getcourses(getevents(makelink(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])))
+  #puts @courses.class
+
+  #puts @courses.inspect
+
+  erb :choose
+end
+
+get '/get/:link' do
+  makecal(getevents(params[:link]))
+end
+
+#returns a String for the URL
+def makelink(year,study,group,degree)
+  link = year+study+group+"-"+degree
+end
+
+#returns an Array with all Courses
+def getcourses(events)
+  courses = []
+  events.each do |event|
+    courses.push(event[5].unpack('C*').pack('U*'))
+  end
+  courses = courses.uniq
+end
+
+#returns a String in iCal Format
+def makecal(events)
+  cal = Calendar.new
+
+  events.each do |event|
+    event[1].each do |week|
+      cal.event do
+        #to calculate the Time with DateTime.commercial, we need the actual Year
+        #the weeknums differ from the real calenderweeknums
+        #we fix this with the getyear and getweek function
+        dtstart     DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
+        dtend       DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
+        summary     event[5]
+      end
+    end
+  end
+
+  #unpack and pack convert the iso-8859-1 to utf-8
+  cal.to_ical.unpack('C*').pack('U*')
+end
+
+#returns an array with all calendar data
+def getevents(link)
+  begin
+    link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+    doc = Hpricot(open(link), :xhmtl_strict)
+    doc = (doc/"table[@border='1']")
+    events = []
+
+    doc.each do |table|
+      weekday = doc.index(table)
       table = (table/"tr")#.to_a
 
       #delete every table header
@@ -34,20 +89,20 @@ get '/choose' do
 
       table.each do |row|
         n = 0
-        @event = Hash.new
+        event = Hash.new
         #add the weekday num before filling the hash with the other stuff
-        @event.store(n,weekday)
+        event.store(n,weekday)
         n += 1
 
         (row/"td").each do |col|
-          @event.store(n,col.inner_html)
+          event.store(n,col.inner_html)
           n += 1
         end
-        @events.push(@event)
+        events.push(event)
       end
     end
 
-    @events.each do |event|
+    events.each do |event|
       event[1] = splitweeks(event[1])
       event[2] = maketime(event[2])
       event[3] = maketime(event[3])
@@ -56,33 +111,19 @@ get '/choose' do
       event.delete(9)
     end
 
-    cal = Calendar.new
-
-    @events.each do |event|
-      event[1].each do |week|
-        cal.event do
-          #to calculate the Time with DateTime.commercial, we need the actual Year
-          #the weeknums differ from the real calenderweeknums
-          #we fix this with the getyear and getweek function
-          dtstart     DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0)
-          dtend       DateTime.commercial(getyear(week), getweek(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0)
-          summary     event[5]
-        end
-      end
-    end
-
-    #unpack and pack convert the iso-8859-1 to utf-8
-    @cal_string = cal.to_ical.unpack('C*').pack('U*')
+    events
 
   rescue OpenURI::HTTPError => e
     puts e
   end
 end
 
+#retuns an Array with Hour and Minute
 def maketime(time)
   time.split(":")
 end
 
+#returns an Array with all CWeeks
 def splitweeks(week)
   a = []
   split = week.split(", ")
@@ -99,6 +140,7 @@ def splitweeks(week)
   a
 end
 
+#just a Hack, returns 2010 if week is > 53
 def getyear(week)
   if week.to_i <= 53 then
     return 2009
@@ -107,6 +149,7 @@ def getyear(week)
   end
 end
 
+#just a Hack, change Planweeks to real CWeeks, example: 57 => 4
 def getweek(week)
   week = week.to_i
   if week > 53 then
