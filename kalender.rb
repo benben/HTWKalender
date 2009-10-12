@@ -25,12 +25,19 @@ get '/choose' do
 end
 
 get '/get/:link' do
-  if params['post'].nil? then #check if there any params
+  #this contruct is ugly, fix it!
+  unless params['post'].nil?
+    venue = params['post'].key?('venue') #get the venue key from the params hash
+    params['post'].delete('venue') #delete the venue pair because we don't need it anymore
+
+    if params['post'].empty? then #check if there any params
+      session['error'] = "Bitte mindestens eine Veranstaltung auswählen!"
+      redirect session['backpath']
+    end
+  else
     session['error'] = "Bitte mindestens eine Veranstaltung auswählen!"
     redirect session['backpath']
   end
-  venue = params['post'].key?('venue') #get the venue key from the params hash
-  params['post'].delete('venue') #delete the venue pair because we don't need it anymore
   p = params['post'].keys
   p.map! do |n| #converts only the keys of the params hash to an array of integers
     n = n.to_i
