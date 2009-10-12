@@ -1,11 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns='http://www.w3.org/1999/xhtml'>
   <head>
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
+    <%= @e %>
     <h1>Anzeigeeinstellungen</h1>
     <p>Hier kannst du festlegen wie dein Kalender am Ende aussehen soll.</p>
     <h2>Veranstaltungen</h2>
@@ -17,16 +19,16 @@
           <td>Veranstaltung</td>
         </tr>
         <%  @courses.each_index do |i| %>
-        <tr>
-          <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
-          <td><%= @courses[i] %></td>
-        </tr>
+          <tr>
+            <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
+            <td><%= @courses[i] %></td>
+          </tr>
         <% end %>
       </table>
       <br />
       <h2>Ort im Titel</h2>
       <p>Falls du den Ort der Veranstaltung im Titel des Events angezeigt haben möchtest, setze hier einfach einen Haken!<br/><br />
-      <input type="checkbox" name="ortimtitel" value="1" /> Ort soll im Titel angezeigt werden</p>
+        <input type="checkbox" name="ortimtitel" value="1" /> Ort soll im Titel angezeigt werden</p>
       <h2>Los gehts!</h2>
       <input type="submit" name="submit" value="submit" />
     </form>

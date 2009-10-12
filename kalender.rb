@@ -8,19 +8,27 @@ require 'kconv'
 
 include Icalendar
 
+enable :sessions
+
 get '/' do
   @studiengang = ["AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
+  @e = throw_error(session['error'])
   erb :index
 end
 
 get '/choose' do
+  @e = throw_error(session['error'])
   @link = make_link(params['post']['jahrgang'],params['post']['studiengang'],params['post']['seminargruppe'],params['post']['abschluss'])
   @courses = get_courses(get_events(@link))
-
+  session['backpath'] = request.fullpath #store this path for redirecting back to this, if there is an error on the next page
   erb :choose
 end
 
 get '/get/:link' do
+  if params['post'].nil? then #check if there any params
+    session['error'] = "Bitte mindestens eine Veranstaltung auswählen!"
+    redirect session['backpath']
+  end
   p = params['post'].keys
   p.map! do |n| #converts only the keys of the params hash to an array of integers
     n = n.to_i
@@ -46,6 +54,12 @@ end
 get '/file/:link/*.ics' do
   content_type 'application/octet-stream', :charset => 'utf-8'
   make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
+end
+
+#returns a errormessage as string
+def throw_error(message)
+  session.delete('error')
+  "<p class=\"error\">" + message + "</p>" unless message.nil?
 end
 
 #returns an array of ones and zeros
@@ -161,7 +175,8 @@ def get_events(link)
     events
 
   rescue OpenURI::HTTPError => e
-    puts e
+    session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
+    redirect '/'
   end
 end
 

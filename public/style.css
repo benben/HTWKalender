@@ -1,0 +1,35 @@
+body {
+    width: 600px;
+    font-family: monospace;
+}
+
+h1, h2 {
+    font-family: "lucida grande",verdana,arial,helvetica,sans-serif;
+    letter-spacing: -1px;
+    background-color: #09F;
+    color: white;
+    padding-left:5px;
+    margin: 5px 0px 5px 0px;
+}
+
+h2 {
+    background-color: #9CF;
+}
+
+.link {
+    background-color: #6F3;
+    padding: 20px;
+    border: 1px solid black;
+    font-weight: bold;
+    font-size: 110%;
+}
+table, td, tr {
+    border: 1px solid #AAA;
+}
+
+.error {
+    background-color: #F66;
+    padding: 20px;
+    font-weight: bold;
+    border: 1px solid black;
+}

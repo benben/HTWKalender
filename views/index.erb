@@ -1,20 +1,60 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns='http://www.w3.org/1999/xhtml'>
   <head>
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
+    <%= @e %>
     <h1>HTWK-Kalender to iCal</h1>
-    <p>Das ist ein erster Test</p>
+    <p>Dieses Script wandelt den HTWK-Kalender den ihr unter
+      <a href="http://www.htwk-leipzig.de/de/studierende/online-services/lehrveranstaltungsplan/matrikel-seminargruppenplan/">http://www.htwk-leipzig.de</a>
+      abrufen könnt, in das universelle iCal Format. Somit könnt ihr euren HTWK-Kalender
+      überall da benutzen wo iCal unetrstützt wird.</p>
+    <p>Es gibt nur Anleitungen f&#252;r Outlook, Sunbird und Google Calendar.
+      Aber es m&#252;ssten eigentlich alle anderen Programme funktionieren die
+      iCal unterst&#252;tzen.</p>
+    <p>Ich habe diese Version komplett in wundervollem Ruby neugeschrieben.
+      <br /><a href="http://www.ruby-lang.org/">http://www.ruby-lang.org/</a></p>
+    <p><strong>Ich würde mich &#252;ber jegliche Kritik, Erfahrungsbericht,
+        Feedback, Beleidigungen freuen. Auch falls ihr Fragen habt oder in der
+        Anleitung irgendwas unklar ist, einfach eine Mail an:
+        ben [ätt] nerdlabor [punkt] de</strong></p>
+    <p style="color:#FF0000;">WICHTIG: Nutzung auf eigene Gefahr.
+      Also falls mal irgendwas Falsches drinsteht und ihr die Vorlesung verpennt,
+      kann ich nix für :).</p>
+    <p>
+      <a href="#kalenderlink">Kalenderlink erstellen</a><br /><br />
+      Kalender importieren in<br />
+      <a href="#sunbird">Sunbird / Thunderbird mit Lightning</a><br />
+      <a href="#outlook">Microsoft Office Outlook 2007</a><br />
+      <a href="#outlook2">ältere Outlook</a><br />
+      <a href="#google">Google Calendar</a><br /><br />
+      <a href="#handy">Kalender aufs Handy</a><br />
+      <a href="#faq">Frequently Asked Questions</a>
+
+    </p>
+    <h1>Anleitungen</h1>
+    <h2><a name="kalenderlink">Kalenderlink erstellen</a></h2>
+    <p>Der Kalenderlink ist wichtig, damit du auch deinen Studiengang importieren kannst.</p>
+    <p>Mit dem nachfolgenden Formular lässt sich der eigene Kalenderlink erstellen.
+      Man sollte Jahrgang, Studiengang und Abschluss auswählen.
+      Bei manchen Studiengängen ist die Seminargruppe schon vorhanden
+      (z.B. bei "AR1/VHB"). Daher sollte man, wenn man sich nicht sicher ist,
+      das Studiengangskürzel anschauen. Falls ihr überhaupt keine Ahnung
+      habt welches Kürzel ihr braucht, dann geht auf euren HTWK-Kalender und
+      schaut in der Adresszeile im Browser nach.
+      Dort steht nach "name;" euer Kürzel.</p>
+
     <p><%= @p %></p>
     <form method="get" action="/choose">
       <table border="1" cellspacing="0" cellpadding="5">
         <tr>
           <td>Jahrgang</td>
           <td>Studiengang</td>
-          <td>Seminargruppe</td>
+          <td>Seminargruppe<font style="color: red;font-weight:bold;">*</font></td>
           <td>Abschluss</td>
         </tr>
         <tr>
@@ -28,9 +68,9 @@
           </td>
           <td>
             <select name="post[studiengang]">
-<% @studiengang.sort.each do |n| %>
-    <option value="<%= n %>"><%= n %></option>
-<% end %></select>
+              <% @studiengang.sort.each do |n| %>
+                <option value="<%= n %>"><%= n %></option>
+            <% end %></select>
           </td>
           <td>
             <select name="post[seminargruppe]">
@@ -58,7 +98,76 @@
         </tr>
       </table>
     </form>
-    <p><%= @link %></p>
-    <p><%= @cal_string %></p>
+    <p><font style="color: red;font-weight:bold;">*</font>Die Seminargruppe sollte nur gewählt werden wenn eine vorhanden ist
+      (Wenns keine Seminargruppen gibt, dann auch keine 1 eintragen)</p>
+    <h2><a name="sunbird">Sunbird / Thunderbird mit Lightning</a></h2>
+    <ol>
+      <li>Erstellt euch euren entsprechenden Kalenderlink.</li>
+      <li>&#246;ffnet Sunbird</li>
+      <li>Klickt auf "Datei" -> "Externen Kalender abonnieren".</li>
+      <li>Es &#246;ffnet sich ein Assistent bei dem ihr "Im Netzwerk" ausw&#228;hlen und auf "Weiter" klicken m&#252;sst.</li>
+      <li>W&#228;hlt dann bem Format "iCalendar (ICS)" aus und gebt euren Kalenderlink ein.</li>
+      <li>Klickt auf "Weiter". Gebt dann eurem Kalender einen Namen und eine Farbe und klickt nochmals auf "Weiter".</li>
+      <li>Wenn dann dasteht "Ihr Kalender wurde erstellt." seit ihr fertig und k&#246;nnt euch an eurem neuen Kalender erfreuen. Wenn nicht: Do it all again!</li>
+    </ol>
+    <h2><a name="outlook">Microsoft Office Outlook 2007</a></h2>
+    <ol>
+      <li>Kalenderlink erstellen, Adressleiste kopieren</li>
+      <li>Outlook in der Kalenderansicht: Extras > Kontoeinstellungen</li>
+      <li>Reiter "Internetkalender" auswählen, dort mit "Neu..." einen Internetkalender anlegen</li>
+      <li>Den Kalenderlink aus der Zwischenablage in das URL-Feld einfügen</li>
+      <li>Nun noch Namen vergeben und das wars, dieser Kalender wird nun künftig aktualisiert</li>
+    </ol>
+    <h2><a name="outlook2">ältere Microsoft Office Outlook</a></h2>
+    <ol>
+      <li>Erstellt euch euren entsprechenden Kalenderlink.</li>
+      <li>&#246;ffnet diesen Link in einem Browser.</li>
+      <li>Klickt dort auf "Datei" -> "Speichern unter" und speichert den Kalender mit der Dateiendung "ics" ab. Also beispielsweise "meinkalender.ics".</li>
+      <li>WICHTIG: &#246;ffnet diese Datei NICHT mit dem Notepad oder &#228;hnliches, da dadurch das UTF-8 Format zerst&#246;rt wird.</li>
+      <li>&#246;ffnet Outlook und klickt auf "Datei" -> "'Importieren/Exportieren...".</li>
+      <li>W&#228;hlt dort "iCalendar- oder vCalendar-Datei (.vcs) importeiren" aus und klickt auf "Weiter".</li>
+      <li>Sucht eure Datei, w&#228;hlt sie an und klickt auf "Ok".</li>
+      <li>Wenn kein Fehler kommt, schaut in eurem Kalender ob alle Eintr&#228;ge korrekt vorhanden sind. Wenn ja:Gl&#252;ckwunsch und viel Spass, Wenn Nein: Do it all again.</li>
+    </ol>
+    <h2><a name="google">Google Calendar</a></h2>
+    <p>Bei Google Calendar gibt es zwei M&#246;glichkeiten euren Kalenderlink einzubinden. Ich bevorzuge erstere, da diese Methode, den Kalendar bei eventuellen &#228;nderungen automatisch auch in meinem Google Calendar &#228;ndert. Bei der zweiten Methode, wird nur die Version des Kalenders benutzt, die zum Zeitpunkt des Speicherns vorlag. Falls Professoren, etc. den Kalender nachtr&#228;glich &#228;ndern, wird euer Kalender dann NICHT automatisch aktualisiert.</p>
+    <h3>M&#246;glichkeit 1:</h3>
+    <ol>
+      <li>Erstelle deinen Kalenderlink.</li>
+      <li>Klicke auf "Manage Calendars". Das findest du etwas versteckt unter deinen pers&#246;nlichen Kalendern.</li>
+      <li>Klicke unter "Other Calendars" auf  "Add Calendar" und dann auf "Public Calendar Address".</li>
+      <li>Gib dort deinen Kalenderlink ein und klicke auf "Add".</li>
+      <li>Nun m&#252;sste der Kalender bei dir erscheinen (kann aber etwas dauern). Wenn nicht: Do it all again.</li>
+    </ol>
+    <h3>M&#246;glichkeit 2:</h3>
+    <ol>
+      <li>Erstelle deinen entsprechenden Kalenderlink.</li>
+      <li>&#246;ffne diesen Link in einem Browser.</li>
+      <li>Klicke dort auf "Datei" -> "Speichern unter" und speichere den Kalender mit der Dateiendung "ics" ab. Also beispielsweise "meinkalender.ics".</li>
+      <li>WICHTIG: ffne diese Datei NICHT mit dem Notepad oder &#228;hnliches, da dadurch das UTF-8 Format
+        zerst&#246;rt wird. (Das Problem tritt nur bei Dreckswindows auf ;-) )</li>
+      <li>Klicke auf "Manage Calendars". Das findest du etwas versteckt unter deinen pers&#246;nlichen Kalendern.</li>
+      <li>Klicke auf "Import Calendar" und w&#228;hle bei "Step 1: Select File" deine Datei an.</li>
+      <li>Klicke auf "Import" und nach ein wenig Ladezeit m&#252;sste sowas &#228;hnliches wie "Successfully imported 301 events." dastehen. Gl&#252;ckwunsch, es l&#228;uft. Wenn nicht: Do it all again.</li>
+    </ol>
+    <h2><a name="handy">Kalender aufs Handy</a></h2>
+    <p>Zuerst m&#252;sst ihr den Kalender nach obigen Anleitungen in Outlook, Sunbird oder irgendwas anderes importieren, je nachdem mit welchen Programm sich eure Handysoftware synchronisieren kann. Somit m&#252;ssten eigentlich alle Handytypen funktionieren, die diese Funktion haben.</p>
+    <h2><a name="faq">FAQ</a></h2>
+    <strong>1. iCal? Was denn das?</strong>
+    <p>Das iCal-Format ist ein universelles Kalenderformat von Apple, welches von Outlook, Sunbird, Google Calender und vielen anderen Programmen gelesen werden kann. Somit k&#246;nnt ihr euch die  Datei hinexportieren wohin ihr wollt.
+      Check: <a href="http://de.wikipedia.org/wiki/Ical">http://de.wikipedia.org/wiki/Ical</a>
+    </p>
+    <strong>2. Ich habe alles pr&#228;zise nach der Anleitung gemacht aber mein Outlook sagt trotzdem "Die Datei calendar.ics ist keine g&#252;ltige Internetkalenderdatei.". Was kann ich tun?</strong>
+    <p>Nun m&#252;sst ihr die Datei doch nochmal &#246;ffnen. Aber bitte nehmt keinen Standardtexteditor sondern am besten ist ein HTML-Editor. Dort k&#246;nnt ihr dann sicherstellen, das er Zeichensatz der Datei UTF-8 bleibt. Diese Einstellung ist bei jedem Editor anders, also einfach mal suchen. Speichert die Datei und versucht sie nochmal in Outlook zu laden. Falls das immernoch nicht funktioniert, schreibt mir ne mail.</p>
+    <strong>3. Ich habe auch Nummer 2 erledigt aber es geht immernoch nicht. Was kann ich noch tun?</strong>
+    <p>Bei &#228;lteren Outlooks kann es Probleme mit der Version des Kalenders geben. &#214;ffnet die Datei wieder nach der Anleitung in Nummer zwei und &#228;ndert in den ersten Zeilen die Versionsnummer von "2.0" auf "1.0" (ohne Anfhrungszeichen).</p>
+    <strong>4. Ich studiere Druck- bzw. Verpackungstechnik (Diplom) und beim Laden des Scripts kommt ein Fehler bei der Eingabe.</strong>
+    <p>Der HTWK-Kalender f&#252;r diesen Studiengang ist zusammengefasst und es muss das K&#252;rzel "DV/DT" bzw. "DV/VT" benutzt werden.</p>
+    <strong>5. Ich nutze MacOS und alle Events sind um eine Stunde verschoben.</strong>
+    <p>Hier sollte &#252;berpr&#252;ft werden ob im Betriebssystem selbst die falsche Zeitzone mit der "richtigen" Zeit gew&#228;hlt wurde und ggf. umgestellt werden.</p>
+    <strong>6. Mein Studiengang, Seminargruppe, Abschluss oder irgendetwas anderes fehlt.</strong>
+    <p>Falls ihr mitbekommt das irgendetwas fehlt, dann schreibt einfach eine Mail.</p>
+
+
   </body>
 </html>
