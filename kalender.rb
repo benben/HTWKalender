@@ -135,8 +135,9 @@ def make_cal(events,venue)
       cal.event do
         dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0) #to calculate the Time with DateTime.commercial, we need the actual Year
         dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
-        summary     event[5] + " (" + event[4] + ")" if venue == "1"
-        summary     event[5] if venue == "0"
+        location    event[4]
+        summary     event[5] + " (" + event[7] + ")" + "(" + event[4] + ")" if venue == "1"
+        summary     event[5] + " (" + event[7] + ")" if venue == "0"
       end
     end
   end
