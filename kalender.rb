@@ -194,9 +194,15 @@ def get_events(link)
 
     events
 
-  rescue OpenURI::HTTPError => e
-    session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
-    redirect '/'
+    rescue OpenURI::HTTPError => e
+      session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
+      redirect '/'
+    rescue Errno::EHOSTUNREACH => e
+      session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+      redirect '/'
+    rescue Exception => e
+      session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
+      redirect '/'
   end
 end
 
