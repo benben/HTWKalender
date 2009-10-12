@@ -29,6 +29,8 @@ get '/get/:link' do
     session['error'] = "Bitte mindestens eine Veranstaltung auswählen!"
     redirect session['backpath']
   end
+  venue = params['post'].key?('venue') #get the venue key from the params hash
+  params['post'].delete('venue') #delete the venue pair because we don't need it anymore
   p = params['post'].keys
   p.map! do |n| #converts only the keys of the params hash to an array of integers
     n = n.to_i
@@ -42,18 +44,27 @@ get '/get/:link' do
       wanted.push(0)
     end
   end
-  @permalink = make_permalink(wanted)
-  @downloadlink = make_downloadlink(params[:link],wanted)
+  @permalink = make_permalink(wanted,venue)
+  @downloadlink = make_downloadlink(params[:link],wanted,venue)
   erb :get
 end
 
-get '/get/:link/*' do
-  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
+get '/get/:link/:venue/*' do
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:venue])
 end
 
-get '/file/:link/*.ics' do
+get '/file/:link/:venue/*.ics' do
   content_type 'application/octet-stream', :charset => 'utf-8'
-  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:venue])
+end
+
+#makes false => "0" and true => "1"
+def bool_to_str(bool)
+  if bool == true then
+    "1"
+  else
+    "0"
+  end
 end
 
 #returns a errormessage as string
@@ -73,13 +84,13 @@ def splat_to_array(splat)
 end
 
 #returns a String which is the downloadlink
-def make_downloadlink(link,wanted)
-  "http://" + request.host + "/file/" + link + "/" + wanted.join("/") + ".ics"
+def make_downloadlink(link,wanted,venue)
+  "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + ".ics"
 end
 
 #returns a String which is the permalink
-def make_permalink(wanted)
-  "http://" + request.host + request.path_info + "/" + wanted.join("/")
+def make_permalink(wanted,venue)
+  "http://" + request.host + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
 end
 
 #deletes all unwanted events and returns an Array
@@ -116,7 +127,7 @@ def get_courses(events)
 end
 
 #returns a String in iCal Format
-def make_cal(events)
+def make_cal(events,venue)
   cal = Calendar.new
 
   events.each do |event|
@@ -124,7 +135,8 @@ def make_cal(events)
       cal.event do
         dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0) #to calculate the Time with DateTime.commercial, we need the actual Year
         dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
-        summary     event[5]
+        summary     event[5] + " (" + event[4] + ")" if venue == "1"
+        summary     event[5] if venue == "0"
       end
     end
   end
