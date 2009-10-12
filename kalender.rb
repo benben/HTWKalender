@@ -21,14 +21,13 @@ get '/choose' do
 end
 
 get '/get/:link' do
-  #TODO hier mit splat_to_array auswechseln
   p = params['post'].keys
-  p.map! do |n|
+  p.map! do |n| #converts only the keys of the params hash to an array of integers
     n = n.to_i
   end
   wanted = []
 
-  for i in 0..p.sort.last
+  for i in 0..p.sort.last #converts an array of integers to an array of ones and zeros, example: [1,4,5] => [0,1,0,0,1,1]
     if p.include?(i) then
       wanted.push(1)
     else
@@ -49,7 +48,7 @@ get '/file/:link/*.ics' do
   make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])))
 end
 
-#returns an array of integers
+#returns an array of ones and zeros
 def splat_to_array(splat)
   wanted = splat[0].split("/")
 

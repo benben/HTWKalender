@@ -4,12 +4,33 @@
   <head>
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <style type="text/css">
+      body {
+        width: 600px;
+        font-family: monospace;
+      }
+
+      h1 {
+        font-family: "lucida grande",verdana,arial,helvetica,sans-serif;
+        letter-spacing: -1px;
+        color: #09F
+      }
+
+      .link {
+        background-color: #6F3;
+        padding: 20px;
+        border: 1px solid black;
+        font-weight: bold;
+        font-size: 120%;
+      }
+    </style>
   </head>
   <body>
     <h1>HTWK-Kalender to iCal</h1>
-    <p>Hier ist dein Kalenderlink. Kopiere diesen einfach in deine Anwendung, dann kannst du immer den aktuellen Kalender verwenden. Oder öffne ihn in einem neuen Browserfenster und speichere alles in ein Datei.</p>
-    <p><%= @permalink %></p>
+    <p>Hier ist dein Kalenderlink. Kopiere diesen einfach in deine Anwendung, dann kannst du immer den aktuellen Kalender verwenden. Das ist die empfohlene Variante.</p>
+    <p class="link"><%= @permalink %></p>
     <p>Hier ist dein Downloadlink. Lade dir hier die Kalenderdatei runter. Achtung: Wenn Änderungen am Kalender vorgenommen werden, ändert sich dein Kalender nicht automatisch, falls du diese Datei benutzt.</p>
-    <p><a href="<%= @downloadlink %>"><%= @downloadlink %></a></p>
+    <p class="link"><a href="<%= @downloadlink %>"><%= @downloadlink %></a></p>
+    <p>Viel Spaß!<br />Anregungen, Lob, Kritik an ben [ätt] nerdlabor [punkt] de</p>
   </body>
 </html>
