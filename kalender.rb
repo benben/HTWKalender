@@ -57,6 +57,7 @@ get '/get/:link' do
 end
 
 get '/get/:link/:venue/*' do
+  content_type 'text/html', :charset => 'utf-8'
   make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:link],params[:venue])
 end
 
