@@ -160,6 +160,8 @@ end
 #returns an array with all calendar data
 def get_events(link)
   begin
+    #fixme
+    link = link.sub("_","/")
     link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")

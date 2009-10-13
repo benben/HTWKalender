@@ -69,7 +69,7 @@
           <td>
             <select name="post[studiengang]">
               <% @studiengang.sort.each do |n| %>
-                <option value="<%= n %>"><%= n %></option>
+                <option value="<%= n.sub("/","_") %>"><%= n %></option>
             <% end %></select>
           </td>
           <td>
