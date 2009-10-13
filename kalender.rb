@@ -57,12 +57,12 @@ get '/get/:link' do
 end
 
 get '/get/:link/:venue/*' do
-  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:venue])
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:link],params[:venue])
 end
 
 get '/file/:link/:venue/*.ics' do
   content_type 'application/octet-stream', :charset => 'utf-8'
-  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:venue])
+  make_cal(only_use_wanted_events(get_events(params[:link]),splat_to_array(params[:splat])),params[:link],params[:venue])
 end
 
 #makes false => "0" and true => "1"
@@ -134,8 +134,12 @@ def get_courses(events)
 end
 
 #returns a String in iCal Format
-def make_cal(events,venue)
+def make_cal(events,link,venue)
   cal = Calendar.new
+
+  cal.product_id = "-//kalender.nerdlabor.org//NERDCAL 2.0//DE"
+  cal.custom_property("X-WR-CALNAME;VALUE=TEXT", "#{link}")
+  cal.custom_property("X-WR-TIMEZONE;VALUE=TEXT", "Europe/Berlin")
 
   events.each do |event|
     event[1].each do |week|
