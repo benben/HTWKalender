@@ -138,8 +138,8 @@ def make_cal(events,link,venue)
   cal = Calendar.new
 
   cal.product_id = "-//kalender.nerdlabor.org//NERDCAL 2.0//DE"
-  cal.custom_property("X-WR-CALNAME", "#{link}")
-  cal.custom_property("X-WR-CALDESC", "#{link}")
+  cal.custom_property("X-WR-CALNAME", "#{link.sub("-","")}")
+  cal.custom_property("X-WR-CALDESC", "#{link.sub("-","")}")
   cal.custom_property("X-WR-TIMEZONE;VALUE=TEXT", "Europe/Berlin")
 
   events.each do |event|
