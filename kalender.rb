@@ -141,13 +141,34 @@ def make_cal(events,link,venue)
   cal.product_id = "-//kalender.nerdlabor.org//NERDCAL 2.0//DE"
   cal.custom_property("X-WR-CALNAME", "#{link.sub("-","")}")
   cal.custom_property("X-WR-CALDESC", "#{link.sub("-","")}")
-  cal.custom_property("X-WR-TIMEZONE;VALUE=TEXT", "Europe/Berlin")
+  cal.custom_property("X-WR-TIMEZONE", "Europe/Berlin")
+
+  cal.timezone do
+    timezone_id             "Europe/Berlin"
+
+    daylight do
+      timezone_offset_from  "+0100"
+      timezone_offset_to    "+0200"
+      timezone_name         "CEST"
+      dtstart               "19700329T020000"
+      add_recurrence_rule   "FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU"
+    end
+
+    standard do
+      timezone_offset_from  "+0200"
+      timezone_offset_to    "+0100"
+      timezone_name         "CET"
+      dtstart               "19701025T030000"
+      add_recurrence_rule   "FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU"
+    end
+  end
+
 
   events.each do |event|
     event[1].each do |week|
       cal.event do
-        dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0].to_i, event[2][1].to_i, 0) #to calculate the Time with DateTime.commercial, we need the actual Year
-        dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0].to_i, event[3][1].to_i, 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
+        dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0], event[2][1], 0) #to calculate the Time with DateTime.commercial, we need the actual Year
+        dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0], event[3][1], 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
         location    event[4]
         summary     event[5] + " (" + event[7] + ")" + "(" + event[4] + ")" if venue == "1"
         summary     event[5] + " (" + event[7] + ")" if venue == "0"
@@ -215,8 +236,11 @@ def get_events(link)
 end
 
 #retuns an Array with Hour and Minute
-def make_time(time)
-  time.split(":")
+def make_time(time)  
+  time = time.split(":")
+  time[0] = time[0].to_i
+  time[1] = time[1].to_i
+  time
 end
 
 #returns an Array with all CWeeks
