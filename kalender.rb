@@ -170,12 +170,22 @@ def make_cal(events,link,venue)
         dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0], event[2][1], 0) #to calculate the Time with DateTime.commercial, we need the actual Year
         dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0], event[3][1], 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
         location    event[4]
-        summary     event[5] + " (" + event[7] + ")" + "(" + event[4] + ")" if venue == "1"
-        summary     event[5] + " (" + event[7] + ")" if venue == "0"
+        summary     event[5] + " " + event[6] + " " + print_info(event[7]) + print_info(event[4]) if venue == "1"
+        summary     event[5] + " " + event[6] + " " + print_info(event[7]) if venue == "0"
       end
     end
   end
   cal.to_ical #generate ical text
+end
+
+#returns a string with braces or an empty string
+def print_info(info)
+  info = "" if info == "&nbsp\;"
+  unless info.empty?
+  "(" + info + ")"
+  else
+    ""
+  end
 end
 
 #returns an array with all calendar data
@@ -215,6 +225,7 @@ def get_events(link)
       event[1] = split_weeks(event[1])
       event[2] = make_time(event[2])
       event[3] = make_time(event[3])
+      event[4] = "" if event[4] == "&nbsp\;" #empty the string if its just a html whitespace
       event[5] = event[5].unpack('C*').pack('U*') #unpack and pack convert the iso-8859-1 to utf-8
       event[7] = event[7].unpack('C*').pack('U*')
       event.delete(8) #delete the last 2 columns "Bemerkungen" and "Gebucht am"
