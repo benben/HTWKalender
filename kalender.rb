@@ -6,11 +6,141 @@ require 'icalendar'
 require 'date'
 require 'kconv'
 
+#Standardbibliothek Ruby, kein gem nötig
+require 'net/http'
+require 'rexml/document'
+require "jcode"
+
+$KCODE = "UTF8"
+
+
+
 include Icalendar
 
 enable :sessions
 
+helpers do
+
+  def get_study_paths
+   
+   # Web search for "xml", ss or ws?
+   #do it more exactly, perhaps day
+  
+   if (1..9).include?(Time.now.mon)
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
+    else
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
+    end
+
+    
+    # get the XML data as a string
+    xml_data = Net::HTTP.get_response(URI.parse(url)).body
+
+    study_paths = []
+
+    # extract study_path information
+    doc = REXML::Document.new(xml_data)
+    doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
+      study_paths.push(element.attributes["id"])
+    end
+
+    jahrgang = []
+    htwk_abk = []
+    abschluss = []
+    semgrp = []
+
+
+
+
+#    study_paths.collect do |study_path|
+#      jahrgang << study_path[(0..1)]
+#      skeller1 << study_path[2..study_path.index("-")-1]
+#      abschluss << study_path[study_path.index("-")+1..study_path.jlength]
+#    end
+
+    study_paths.collect do |study_path|
+      jahrgang << study_path[(0..1)]
+      htwk_abk << study_path[2..study_path.index("-")-1]
+      abschluss << study_path[study_path.index("-")+1..study_path.jlength]
+    end
+
+    htwk_abk.collect! do |str|
+      if str.each_char.
+      if str.delete([0..9])
+        str.delete([0..9])
+        semgrp << str
+      end
+    end
+
+    jahrgang.uniq!
+    htwk_abk.uniq!
+    abschluss.uniq!
+    semgrp.uniq!
+
+    puts "Jahrgänge"
+    puts jahrgang.sort
+    puts "Abschluss"
+    puts abschluss.sort
+    puts "##########"
+    puts htwk_abk
+    puts "Semgrp"
+    puts semgrp
+
+  #studiengang.each_char do |char|
+  #      if char.to_i != 0
+  #        d << char.to_i
+  #        puts studiengang.index(char)
+  #        studiengang.slice!(studiengang.index(char))
+  #      end
+  #    end
+
+    htwk = {"jahrgang" => jahrgang, "htwk_abk" => htwk_abk,"semgrp" => semgrp, "abschluss" => abschluss}
+
+    #puts htwk.inspect
+
+    htwk
+  
+
+    #b
+=begin
+    study_paths.collect! do |study_path|
+      # $~.captures if study_path.match(/\A.{1,3}(D|M|B)\z/)
+      if study_path =~(/\A.{1,#{get_study_path_length study_path}}(D|M|B)\z/)
+        study_path.slice!(study_path.jlength-1)
+      end
+      study_path
+    end
+=end
+    #study_paths.uniq!
+    #study_paths
+
+  end
+
+
+  def get_study_path_length string
+    if string.jlength == 1
+      1
+    else
+      string.jlength-1
+    end
+  end
+
+
+  def get_faculties
+
+  end
+
+  def get_seminars
+
+  end
+
+end
+
+
+
+
 get '/' do
+  @studiengang2 = get_study_paths
   @studiengang = ["SEM","AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
   @e = throw_error(session['error'])
   erb :index
