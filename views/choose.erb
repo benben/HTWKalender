@@ -12,7 +12,7 @@
     <p>Hier kannst du festlegen wie dein Kalender am Ende aussehen soll.</p>
     <h2>Veranstaltungen</h2>
     <p>Markiere einfach alle Veranstaltungen, die angezeigt werden sollen!</p>
-    <form method="get" action="/get/<%= @link.sub!("/","_") %>">
+    <form method="get" action="/get/<%= @link.sub("/","_") %>">
       <table border="1" cellspacing="0" cellpadding="2">
         <tr>
           <td>&nbsp;</td>
