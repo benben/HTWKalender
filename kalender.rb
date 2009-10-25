@@ -21,14 +21,14 @@ enable :sessions
 
 helpers do
 
-  def get_study_paths
+  def get_study_data
    
-   # Web search for "xml", ss or ws?
-   #do it more exactly, perhaps day
-  
-   if (1..9).include?(Time.now.mon)
+    # Web search for "xml", ss or ws?
+    #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
+    if (1..9).include?(Time.now.mon)
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
-    else
+      # set Constant for actual period
+     else
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
     end
 
@@ -36,112 +36,59 @@ helpers do
     # get the XML data as a string
     xml_data = Net::HTTP.get_response(URI.parse(url)).body
 
-    study_paths = []
+    htwk_string = []
 
     # extract study_path information
     doc = REXML::Document.new(xml_data)
     doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
-      study_paths.push(element.attributes["id"])
+      htwk_string.push(element.attributes["id"])
     end
 
     jahrgang = []
-    htwk_abk = []
+    studiengang = []
     abschluss = []
-    semgrp = []
+    seminargruppe = []
+    
+    # if no smgrp exists, default
+    seminargruppe.push("")
 
-
-
-
-#    study_paths.collect do |study_path|
-#      jahrgang << study_path[(0..1)]
-#      skeller1 << study_path[2..study_path.index("-")-1]
-#      abschluss << study_path[study_path.index("-")+1..study_path.jlength]
-#    end
-
-    study_paths.collect do |study_path|
-      jahrgang << study_path[(0..1)]
-      htwk_abk << study_path[2..study_path.index("-")-1]
-      abschluss << study_path[study_path.index("-")+1..study_path.jlength]
+    # get the important string parts
+    htwk_string.collect do |str|
+      jahrgang << str[(0..1)]
+      studiengang << str[2..str.index("-")-1]
+      abschluss << str[str.index("-")+1..str.index("-")+1]
     end
 
-    htwk_abk.collect! do |str|
-      if str.each_char.
-      if str.delete([0..9])
-        str.delete([0..9])
-        semgrp << str
+    # get list of seminargroups from string part "studiengang"
+    studiengang.collect! do |str|
+      # if it is a number
+    
+      if /\d+/.match(str)
+        #fill the array and remove the number from string
+        seminargruppe << $&
+        str.slice! $&
+        str
       end
+      str
     end
 
     jahrgang.uniq!
-    htwk_abk.uniq!
+    studiengang.uniq!
     abschluss.uniq!
-    semgrp.uniq!
+    seminargruppe.uniq!
 
-    puts "Jahrgänge"
-    puts jahrgang.sort
-    puts "Abschluss"
-    puts abschluss.sort
-    puts "##########"
-    puts htwk_abk
-    puts "Semgrp"
-    puts semgrp
-
-  #studiengang.each_char do |char|
-  #      if char.to_i != 0
-  #        d << char.to_i
-  #        puts studiengang.index(char)
-  #        studiengang.slice!(studiengang.index(char))
-  #      end
-  #    end
-
-    htwk = {"jahrgang" => jahrgang, "htwk_abk" => htwk_abk,"semgrp" => semgrp, "abschluss" => abschluss}
-
-    #puts htwk.inspect
-
+    # hash with all data
+    htwk = {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
     htwk
-  
-
-    #b
-=begin
-    study_paths.collect! do |study_path|
-      # $~.captures if study_path.match(/\A.{1,3}(D|M|B)\z/)
-      if study_path =~(/\A.{1,#{get_study_path_length study_path}}(D|M|B)\z/)
-        study_path.slice!(study_path.jlength-1)
-      end
-      study_path
-    end
-=end
-    #study_paths.uniq!
-    #study_paths
-
   end
-
-
-  def get_study_path_length string
-    if string.jlength == 1
-      1
-    else
-      string.jlength-1
-    end
-  end
-
-
-  def get_faculties
-
-  end
-
-  def get_seminars
-
-  end
-
 end
 
 
 
 
 get '/' do
-  @studiengang2 = get_study_paths
-  @studiengang = ["SEM","AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
+  @htwkData = get_study_data
+  #@studiengang = ["SEM","AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
   @e = throw_error(session['error'])
   erb :index
 end
@@ -252,6 +199,7 @@ end
 
 #returns a String for the URL
 def make_link(year,study,group,degree)
+  #link = year+study+group+"-"+degree
   year+study+group+"-"+degree
 end
 
@@ -312,7 +260,7 @@ end
 def print_info(info)
   info = "" if info == "&nbsp\;"
   unless info.empty?
-  "(" + info + ")"
+    "(" + info + ")"
   else
     ""
   end
@@ -324,6 +272,7 @@ def get_events(link)
     #fixme
     link = link.sub("_","/")
     link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+        
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")
     events = []
@@ -364,15 +313,15 @@ def get_events(link)
 
     events
 
-    rescue OpenURI::HTTPError => e
-      session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
-      redirect '/'
-    rescue Errno::EHOSTUNREACH => e
-      session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
-      redirect '/'
-    rescue Exception => e
-      session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
-      redirect '/'
+  rescue OpenURI::HTTPError => e
+    session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
+    redirect '/'
+  rescue Errno::EHOSTUNREACH => e
+    session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+    redirect '/'
+  rescue Exception => e
+    session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
+    redirect '/'
   end
 end
 

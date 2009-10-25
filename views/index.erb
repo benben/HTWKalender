@@ -55,43 +55,35 @@
         <tr>
           <td>Jahrgang</td>
           <td>Studiengang</td>
-          <td>Seminargruppe<font style="color: red;font-weight:bold;">*</font></td>
+          <td>Seminargruppe</td>
           <td>Abschluss</td>
         </tr>
         <tr>
           <td>
             <select name="post[jahrgang]">
-              <option value="09">09</option>
-              <option value="08">08</option>
-              <option value="07">07</option>
-              <option value="06">06</option>
-            </select>
-          </td>
-          <td>
-            <select name="post[studiengang]">
-              <% @studiengang.sort.each do |n| %>
-                <option value="<%= n.sub("/","_") %>"><%= n %></option>
+              <% @htwkData["jahrgang"].sort.each do |n| %>
+                <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>
           <td>
+            <select name="post[studiengang]">
+              <% @htwkData["studiengang"].sort.each do |n| %>
+                <option value="<%= n %>"><%= n %></option>
+                <% end %>
+              </select>
+          </td>
+          <td>
             <select name="post[seminargruppe]">
-              <option value=""></option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-            </select>
+              <% @htwkData["seminargruppe"].sort.each do |n| %>
+                <option value="<%= n %>"><%= n %></option>
+                <% end %>
+              </select>
           </td>
           <td>
             <select name="post[abschluss]">
-              <option value="D">Diplom</option>
-              <option value="B">Bachelor</option>
-              <option value="M">Master</option>
-              <option value="F">Frühstudium</option>
-              <option value="T">Teilstudium</option>
-            </select>
+              <% @htwkData["abschluss"].sort.each do |n| %>
+                <option value="<%= n %>"><%= n.to_s %></option>
+            <% end %></select>
           </td>
         </tr>
         <tr>
