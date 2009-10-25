@@ -4,10 +4,12 @@
   <head>
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
+
     <%= @e %>
+    
     <h1>HTWK-Kalender to iCal</h1>
     <p>Dieses Script wandelt den HTWK-Kalender den ihr unter
       <a href="http://www.htwk-leipzig.de/de/studierende/online-services/lehrveranstaltungsplan/matrikel-seminargruppenplan/">http://www.htwk-leipzig.de</a>
@@ -55,7 +57,7 @@
         <tr>
           <td>Jahrgang</td>
           <td>Studiengang</td>
-          <td>Seminargruppe</td>
+          <td>Seminargruppe<span style="color: red;font-weight:bold;">*</span></td>
           <td>Abschluss</td>
         </tr>
         <tr>
@@ -74,7 +76,7 @@
           </td>
           <td>
             <select name="post[seminargruppe]">
-              <% @htwkData["seminargruppe"].sort.each do |n| %>
+              <% @htwkData["seminargruppe"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
                 <% end %>
               </select>
@@ -82,7 +84,7 @@
           <td>
             <select name="post[abschluss]">
               <% @htwkData["abschluss"].sort.each do |n| %>
-                <option value="<%= n %>"><%= n.to_s %></option>
+                <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>
         </tr>
@@ -91,7 +93,7 @@
         </tr>
       </table>
     </form>
-    <p><font style="color: red;font-weight:bold;">*</font>Die Seminargruppe
+    <p><span style="color: red;font-weight:bold;">*</span>Die Seminargruppe
       sollte nur gewählt werden wenn eine vorhanden ist (Wenns keine
       Seminargruppen gibt, dann auch keine 1 eintragen)</p>
     <h2><a name="sunbird">Sunbird / Thunderbird mit Lightning</a></h2>
@@ -172,26 +174,26 @@
      dem du nahezu jedes Sony Ericsson mit iCal befüttern kannst.
      <a href="http://www.fjsoft.at/de/downloads.php">Download hier</a></p>
     <h2><a name="faq">FAQ</a></h2>
-    <strong>1. iCal? Was denn das?</strong>
+    <p class="faq">1. iCal? Was denn das?</p>
     <p>Das iCal-Format ist ein universelles Kalenderformat von Apple, welches
       von Outlook, Sunbird, Google Calender und vielen anderen Programmen
       gelesen werden kann. Somit kannst du dir die  Datei hinexportieren wohin
       du willst. Check:
       <a href="http://de.wikipedia.org/wiki/ICalendar">http://de.wikipedia.org/wiki/ICalendar</a>
     </p>
-    <strong>2. Ich studiere Druck- bzw. Verpackungstechnik (Diplom) und beim
-      Laden des Scripts kommt ein Fehler bei der Eingabe.</strong>
+    <p class="faq">2. Ich studiere Druck- bzw. Verpackungstechnik (Diplom) und beim
+      Laden des Scripts kommt ein Fehler bei der Eingabe.</p>
     <p>Der HTWK-Kalender für diesen Studiengang ist zusammengefasst und es muss
       das Kürzel "DV/DT" bzw. "DV/VT" benutzt werden.</p>
-    <strong>3. Ich nutze MacOS und alle Events sind um eine Stunde verschoben.</strong>
+    <p class="faq">3. Ich nutze MacOS und alle Events sind um eine Stunde verschoben.</p>
     <p>Hier solltest du überprüfen ob im Betriebssystem selbst die
       falsche Zeitzone mit der "richtigen" Zeit gewählt wurde und ggf.
       umstellen.</p>
-    <strong>4. Mein Studiengang, Seminargruppe, Abschluss oder irgendetwas
-      anderes fehlt.</strong>
+    <p class="faq">4. Mein Studiengang, Seminargruppe, Abschluss oder irgendetwas
+      anderes fehlt.</p>
     <p>Falls du mitbekommst das irgendetwas fehlt, dann schreib mir einfach
       eine Mail.</p>
-    <strong>5. Mein Outlook 2003 möchte die Kalenderdatei nicht schlucken!</strong>
+    <p class="faq">5. Mein Outlook 2003 möchte die Kalenderdatei nicht schlucken!</p>
     <p>Öffne die Datei mit einem Editor, der NICHT der Windows Editor ist. Suche
       VERSION:2.0 und mach ein VERSION:1.0 draus und hoffe das es dann
       funktioniert.</p>

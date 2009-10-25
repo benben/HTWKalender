@@ -6,83 +6,89 @@ require 'icalendar'
 require 'date'
 require 'kconv'
 
-#Standardbibliothek Ruby, kein gem nötig
+#ruby SB, no gem needed
 require 'net/http'
 require 'rexml/document'
 require "jcode"
 
+#important for jlength
 $KCODE = "UTF8"
-
-
 
 include Icalendar
 
 enable :sessions
 
+# @ ben the right way in sinatra ???
 helpers do
 
-  def get_study_data
-   
-    # Web search for "xml", ss or ws?
-    #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
-    if (1..9).include?(Time.now.mon)
-      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
-      # set Constant for actual period
-     else
-      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
-    end
-
-    
-    # get the XML data as a string
-    xml_data = Net::HTTP.get_response(URI.parse(url)).body
-
-    htwk_string = []
-
-    # extract study_path information
-    doc = REXML::Document.new(xml_data)
-    doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
-      htwk_string.push(element.attributes["id"])
-    end
-
-    jahrgang = []
-    studiengang = []
-    abschluss = []
-    seminargruppe = []
-    
-    # if no smgrp exists, default
-    seminargruppe.push("")
-
-    # get the important string parts
-    htwk_string.collect do |str|
-      jahrgang << str[(0..1)]
-      studiengang << str[2..str.index("-")-1]
-      abschluss << str[str.index("-")+1..str.index("-")+1]
-    end
-
-    # get list of seminargroups from string part "studiengang"
-    studiengang.collect! do |str|
-      # if it is a number
-    
-      if /\d+/.match(str)
-        #fill the array and remove the number from string
-        seminargruppe << $&
-        str.slice! $&
-        str
-      end
-      str
-    end
-
-    jahrgang.uniq!
-    studiengang.uniq!
-    abschluss.uniq!
-    seminargruppe.uniq!
-
-    # hash with all data
-    htwk = {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
-    htwk
-  end
 end
 
+
+def get_study_data
+   
+  # Web search for "xml", ss or ws?
+  #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
+  if (3..9).include?(Time.now.mon)
+    url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
+    # set Constant for actual period
+  else
+    url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
+  end
+
+  # get the XML data as a string
+  xml_data = Net::HTTP.get_response(URI.parse(url)).body
+
+  # Array with parsed strings from xml file
+  htwk_strings = []
+
+  # extract study_path information
+  doc = REXML::Document.new(xml_data)
+  doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
+    htwk_strings.push(element.attributes["id"])
+  end
+
+  # filled arrays for select options
+  jahrgang = []
+  studiengang = []
+
+  seminargruppe = []
+  # if no smgrp exists, default
+  seminargruppe.push("")
+  
+  abschluss = []
+    
+  
+
+  # get the important string parts
+  htwk_strings.collect do |str|
+    jahrgang << str[(0..1)]
+    studiengang << str[2..str.index("-")-1]
+    abschluss << str[str.index("-")+1..str.index("-")+1]
+  end
+
+  # get list of seminargroups from string part "studiengang"
+  studiengang.collect! do |str|
+    # it´s a number?
+    if /\d+/.match(str)
+      #fill the array and remove the number from string
+      seminargruppe << $&
+      str.slice! $&
+      str
+    end
+    str
+  end
+
+  jahrgang.uniq!
+  studiengang.uniq!
+  abschluss.uniq!
+
+  #correct sorting of integer
+  seminargruppe.uniq!.sort{|x,y| x.to_i <=> y.to_i}
+
+  # hash with all data
+  htwk = {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
+  htwk
+end
 
 
 
@@ -199,8 +205,15 @@ end
 
 #returns a String for the URL
 def make_link(year,study,group,degree)
-  #link = year+study+group+"-"+degree
-  year+study+group+"-"+degree
+
+  #correct integration of semgrp number in string
+  if study.include? "/"
+    study.insert(study.index("/"), group)
+    link = year+study+"-"+degree
+  else
+    link = year+study+group+"-"+degree
+  end
+  link
 end
 
 #returns an Array with all Courses
@@ -269,10 +282,17 @@ end
 #returns an array with all calendar data
 def get_events(link)
   begin
-    #fixme
-    link = link.sub("_","/")
-    link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
-        
+    if (3..9).include?(Time.now.mon)
+      link = "http://stundenplan.htwk-leipzig.de:8080/ss/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+    else
+      link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+    end
+
+    puts link
+
+    #fix problem with "/" ???
+    #link = URI.escape link
+
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")
     events = []
