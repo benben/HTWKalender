@@ -4,7 +4,7 @@
   <head>
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
     <%= @e %>
@@ -13,7 +13,7 @@
     <h2>Veranstaltungen</h2>
     <p>Markiere einfach alle Veranstaltungen, die angezeigt werden sollen!</p>
     <form method="get" action="/get/<%= @link.sub("/","_") %>">
-      <table border="1" cellspacing="0" cellpadding="2">
+      <table style="margin-bottom:10px;" border="1" cellspacing="0" cellpadding="2">
         <tr>
           <td>&nbsp;</td>
           <td>Veranstaltung</td>
@@ -21,16 +21,15 @@
         <%  @courses.each_index do |i| %>
           <tr>
             <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
-            <td><%= @courses[i] %></td>
+            <td><%= hsp @courses[i] %></td>
           </tr>
         <% end %>
       </table>
-      <br />
       <h2>Ort im Titel</h2>
       <p>Falls du den Ort der Veranstaltung im Titel des Events angezeigt haben möchtest, setze hier einfach einen Haken!<br/><br />
         <input type="checkbox" name="post[venue]" value="1" />Ort soll im Titel angezeigt werden</p>
       <h2>Los gehts!</h2>
-      <input type="submit" name="submit" value="submit" />
+      <p><input type="submit" name="submit" value="submit" /></p>
     </form>
   </body>
 </html>

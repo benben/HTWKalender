@@ -10,9 +10,11 @@ require 'kconv'
 require 'net/http'
 require 'rexml/document'
 require "jcode"
+require 'htmlentities'
+
 
 #important for jlength
-$KCODE = "UTF8"
+$KCODE = "u"
 
 include Icalendar
 
@@ -20,7 +22,10 @@ enable :sessions
 
 # @ ben the right way in sinatra ???
 helpers do
-
+  def hsp str
+    coder = HTMLEntities.new
+    coder.encode(str)
+  end
 end
 
 
