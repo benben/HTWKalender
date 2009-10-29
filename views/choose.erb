@@ -5,6 +5,7 @@
     <title>HTWK-Kalender to iCal</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="htwkical.js" type="text/javascript"></script>
   </head>
   <body>
     <%= @e %>
@@ -12,7 +13,7 @@
     <p>Hier kannst du festlegen wie dein Kalender am Ende aussehen soll.</p>
     <h2>Veranstaltungen</h2>
     <p>Markiere einfach alle Veranstaltungen, die angezeigt werden sollen!</p>
-    <form method="get" action="/get/<%= @link.sub("/","_") %>">
+    <form method="get" action="/get/<%= @link.sub("/","_") %>" name="form">
       <table style="margin-bottom:10px;" border="1" cellspacing="0" cellpadding="2">
         <tr>
           <td>&nbsp;</td>
@@ -21,9 +22,13 @@
         <%  @courses.each_index do |i| %>
           <tr>
             <td><input type="checkbox" name="post[<%= i %>]" value="1" /></td>
-            <td><%= hsp @courses[i] %></td>
+            <td><%= html_special_char @courses[i] %></td>
           </tr>
         <% end %>
+        <tr>
+        <td><input type="checkbox" name="chooseAll" onClick="AllSubjects(this.form)" value="1" /></td>
+        <td><strong>Alle Veranstaltungen auswählen</strong></td>
+        </tr>
       </table>
       <h2>Ort im Titel</h2>
       <p>Falls du den Ort der Veranstaltung im Titel des Events angezeigt haben möchtest, setze hier einfach einen Haken!<br/><br />

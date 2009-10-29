@@ -22,7 +22,7 @@ enable :sessions
 
 # @ ben the right way in sinatra ???
 helpers do
-  def hsp str
+  def html_special_char str
     coder = HTMLEntities.new
     coder.encode(str)
   end
@@ -30,78 +30,86 @@ end
 
 
 def get_study_data
-   
-  # Web search for "xml", ss or ws?
-  #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
-  if (3..9).include?(Time.now.mon)
-    url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
-    # set Constant for actual period
-  else
-    url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
-  end
-
-  # get the XML data as a string
-  xml_data = Net::HTTP.get_response(URI.parse(url)).body
-
-  # Array with parsed strings from xml file
-  htwk_strings = []
-
-  # extract study_path information
-  doc = REXML::Document.new(xml_data)
-  doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
-    htwk_strings.push(element.attributes["id"])
-  end
-
-  # filled arrays for select options
-  jahrgang = []
-  studiengang = []
-
-  seminargruppe = []
-  # if no smgrp exists, default
-  seminargruppe.push("")
-  
-  abschluss = []
-    
-  
-
-  # get the important string parts
-  htwk_strings.collect do |str|
-    jahrgang << str[(0..1)]
-    studiengang << str[2..str.index("-")-1]
-    abschluss << str[str.index("-")+1..str.index("-")+1]
-  end
-
-  # get list of seminargroups from string part "studiengang"
-  studiengang.collect! do |str|
-    # it´s a number?
-    if /\d+/.match(str)
-      #fill the array and remove the number from string
-      seminargruppe << $&
-      str.slice! $&
-      str
+  begin
+    # Web search for "xml", ss or ws?
+    #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
+    if (3..9).include?(Time.now.mon)
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
+      # set Constant for actual period
+    else
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
     end
-    str
+
+    # get the XML data as a string
+    xml_data = Net::HTTP.get_response(URI.parse(url)).body
+
+    # Array with parsed strings from xml file
+    htwk_strings = []
+
+    # extract study_path information
+    doc = REXML::Document.new(xml_data)
+    doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
+      htwk_strings.push(element.attributes["id"])
+    end
+
+   
+      # filled arrays for select options
+      jahrgang = []
+      studiengang = []
+      # if no smgrp exists, default
+      seminargruppe = [""]
+      abschluss = []
+    
+      # get the important string parts
+      htwk_strings.collect do |str|
+        jahrgang << str[(0..1)]
+        studiengang << str[2..str.index("-")-1]
+        abschluss << str[str.index("-")+1..str.index("-")+1]
+      end
+
+      # get list of seminargroups from string part "studiengang"
+      studiengang.collect! do |str|
+        # it´s a number?
+        if /\d+/.match(str)
+          #fill the array and remove the number from string
+          seminargruppe << $&
+          str.slice! $&
+          str
+        end
+        str
+      end
+
+      jahrgang.uniq!.sort!
+      studiengang.uniq!.sort!
+      seminargruppe.uniq!.sort!
+      abschluss.uniq!.sort!
+
+      # hash with all data
+      {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
+  
+  rescue NoMethodError => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+    erb :error
+  rescue Errno::EHOSTUNREACH => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+    erb :error
+  rescue Exception => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
+    erb :error
   end
-
-  jahrgang.uniq!
-  studiengang.uniq!
-  abschluss.uniq!
-
-  #correct sorting of integer
-  seminargruppe.uniq!.sort{|x,y| x.to_i <=> y.to_i}
-
-  # hash with all data
-  htwk = {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
-  htwk
 end
 
 
-
 get '/' do
-  @htwkData = get_study_data
-  #@studiengang = ["SEM","AR","AR3/VDPF","AR1/VHB","AR4/VIA","AR5/VPM","AR2/VSB","BI","BI5/BB","BI2/BS","BI4/GWV","BI3/HB","BI1/KI","BI/KI","BI/BB","EIT/AET","EIT/EET","EIT/MSR","EIT/NKT","EIT/PIL","EI","EI/AEE","EI/KTA","EI/MET","ET/AET","ET/AT","ET/NKT","EI/AET","EI/AT","EI/EET","EI/IAS","EI/KT","WET","IN/PI","IN/TI","IN","WM","WM/FVM","WM/OR","AM","MI","EG/EVT","EG/TGA","EG/UT","EU","MB/AMK","MB/MBI","MB/PT","MB","WME/EG","WME/MB","WME","WE","BK","BV","MU","DV/DT","DV/VT","MT","VH","SA","SW","WIB","BW","IM","F","FP","WT","GM","DT","VT","DV"]
-  @e = throw_error(session['error'])
-  erb :index
+  begin
+    @htwkData = get_study_data
+    @e = throw_error(session['error'])
+    erb :index
+  rescue Exception => e
+    @e = throw_error session['error'] = "Der HTWK Server ist zur Zeit nicht erreichbar oder die Datenstruktur des Servers hat sich geändert. Sollte das Problem länger bestehen, schicke mir bitte eine Mail.<br /><br /> Mail an: ben [ätt] nerdlabor [punkt] de"
+    erb :error
+  end
+
 end
 
 get '/choose' do
@@ -117,8 +125,8 @@ get '/get/:link' do
   unless params['post'].nil?
     venue = params['post'].key?('venue') #get the venue key from the params hash
     params['post'].delete('venue') #delete the venue pair because we don't need it anymore
-
-    if params['post'].empty? then #check if there any params
+    params['post'].delete('')
+    if params['post'].empty? #check if there any params
       session['error'] = "Bitte mindestens eine Veranstaltung auswählen!"
       redirect session['backpath']
     end
@@ -293,11 +301,6 @@ def get_events(link)
       link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
     end
 
-    puts link
-
-    #fix problem with "/" ???
-    #link = URI.escape link
-
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")
     events = []
@@ -335,7 +338,7 @@ def get_events(link)
       event.delete(8) #delete the last 2 columns "Bemerkungen" and "Gebucht am"
       event.delete(9)
     end
-
+   
     events
 
   rescue OpenURI::HTTPError => e

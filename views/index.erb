@@ -63,13 +63,13 @@
         <tr>
           <td>
             <select name="post[jahrgang]">
-              <% @htwkData["jahrgang"].sort.each do |n| %>
+              <% @htwkData["jahrgang"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>
           <td>
             <select name="post[studiengang]">
-              <% @htwkData["studiengang"].sort.each do |n| %>
+              <% @htwkData["studiengang"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
                 <% end %>
               </select>
@@ -83,7 +83,7 @@
           </td>
           <td>
             <select name="post[abschluss]">
-              <% @htwkData["abschluss"].sort.each do |n| %>
+              <% @htwkData["abschluss"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>
