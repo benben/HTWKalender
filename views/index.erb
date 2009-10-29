@@ -10,7 +10,7 @@
 
     <%= @e %>
     
-    <h1>HTWK-Kalender to iCal</h1>
+    <h1>HTWK-Kalender to iCal für das <%= @htwk["semester"] %></h1>
     <p>Dieses Script wandelt den HTWK-Kalender, den ihr unter
       <a href="http://www.htwk-leipzig.de/de/studierende/online-services/lehrveranstaltungsplan/matrikel-seminargruppenplan/">http://www.htwk-leipzig.de</a>
       abrufen könnt, in das universelle iCal Format um. Somit könnt ihr euren HTWK-Kalender
@@ -40,7 +40,7 @@
 
     </p>
     <h1>Anleitungen</h1>
-    <h2><a name="kalenderlink">Kalenderlink erstellen</a></h2>
+    <h2><a name="kalenderlink">Kalenderlink erstellen für das <%= @htwk["semester"] %></a></h2>
     <p>Der Kalenderlink ist wichtig, damit du auch deinen Studiengang importieren kannst.</p>
     <p>Mit dem nachfolgenden Formular lässt sich der eigene Kalenderlink erstellen.
       Man sollte Jahrgang, Studiengang und Abschluss auswählen.
@@ -55,6 +55,9 @@
     <form method="get" action="/choose">
       <table border="1" cellspacing="0" cellpadding="5">
         <tr>
+          <td rowspan="4"><strong><%= @htwk["semester"] %></strong><br/>(<%= @htwk["zeitraum"] %>)</td>
+        </tr>
+        <tr>
           <td>Jahrgang</td>
           <td>Studiengang</td>
           <td>Seminargruppe<span style="color: red;font-weight:bold;">*</span></td>
@@ -63,27 +66,27 @@
         <tr>
           <td>
             <select name="post[jahrgang]">
-              <% @htwkData["jahrgang"].each do |n| %>
+              <% @htwk["jahrgang"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>
           <td>
             <select name="post[studiengang]">
-              <% @htwkData["studiengang"].each do |n| %>
+              <% @htwk["studiengang"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
                 <% end %>
               </select>
           </td>
           <td>
             <select name="post[seminargruppe]">
-              <% @htwkData["seminargruppe"].each do |n| %>
+              <% @htwk["seminargruppe"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
                 <% end %>
               </select>
           </td>
           <td>
             <select name="post[abschluss]">
-              <% @htwkData["abschluss"].each do |n| %>
+              <% @htwk["abschluss"].each do |n| %>
                 <option value="<%= n %>"><%= n %></option>
             <% end %></select>
           </td>

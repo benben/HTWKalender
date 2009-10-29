@@ -14,7 +14,7 @@ require 'htmlentities'
 
 
 #important for jlength
-$KCODE = "u"
+$KCODE = "UTF8"
 
 include Icalendar
 
@@ -23,90 +23,22 @@ enable :sessions
 # @ ben the right way in sinatra ???
 helpers do
   def html_special_char str
-    coder = HTMLEntities.new
-    coder.encode(str)
-  end
-end
-
-
-def get_study_data
-  begin
-    # Web search for "xml", ss or ws?
-    #do it more exactly, perhaps day and constant in own init, constant should be set problem!!!
-    if (3..9).include?(Time.now.mon)
-      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
-      # set Constant for actual period
+    if str.include? '&nbsp;'
+      str.delete! '&nbsp;'
     else
-      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
+      coder = HTMLEntities.new
+      coder.encode(str)
     end
-
-    # get the XML data as a string
-    xml_data = Net::HTTP.get_response(URI.parse(url)).body
-
-    # Array with parsed strings from xml file
-    htwk_strings = []
-
-    # extract study_path information
-    doc = REXML::Document.new(xml_data)
-    doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
-      htwk_strings.push(element.attributes["id"])
-    end
-
-   
-      # filled arrays for select options
-      jahrgang = []
-      studiengang = []
-      # if no smgrp exists, default
-      seminargruppe = [""]
-      abschluss = []
-    
-      # get the important string parts
-      htwk_strings.collect do |str|
-        jahrgang << str[(0..1)]
-        studiengang << str[2..str.index("-")-1]
-        abschluss << str[str.index("-")+1..str.index("-")+1]
-      end
-
-      # get list of seminargroups from string part "studiengang"
-      studiengang.collect! do |str|
-        # it´s a number?
-        if /\d+/.match(str)
-          #fill the array and remove the number from string
-          seminargruppe << $&
-          str.slice! $&
-          str
-        end
-        str
-      end
-
-      jahrgang.uniq!.sort!
-      studiengang.uniq!.sort!
-      seminargruppe.uniq!.sort!
-      abschluss.uniq!.sort!
-
-      # hash with all data
-      {"jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
-  
-  rescue NoMethodError => e
-    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
-    erb :error
-  rescue Errno::EHOSTUNREACH => e
-    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
-    erb :error
-  rescue Exception => e
-    @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
-    erb :error
   end
 end
-
 
 get '/' do
   begin
-    @htwkData = get_study_data
+    @htwk = get_study_data
     @e = throw_error(session['error'])
     erb :index
   rescue Exception => e
-    @e = throw_error session['error'] = "Der HTWK Server ist zur Zeit nicht erreichbar oder die Datenstruktur des Servers hat sich geändert. Sollte das Problem länger bestehen, schicke mir bitte eine Mail.<br /><br /> Mail an: ben [ätt] nerdlabor [punkt] de"
+    @e = throw_error session['error'] = e.to_s + "<br />Der HTWK Server ist zur Zeit nicht erreichbar oder die Datenstruktur des Servers hat sich geändert. Sollte das Problem länger bestehen, schicke mir bitte eine Mail.<br /><br /> Mail an: ben [ätt] nerdlabor [punkt] de"
     erb :error
   end
 
@@ -292,6 +224,90 @@ def print_info(info)
   end
 end
 
+#returns a hash with data for year, course, group and degree
+def get_study_data
+  begin
+
+    url = "http://stundenplan.htwk-leipzig.de:8080/stundenplan/studienjahr.xml"
+    
+    #get semester, semester id, time
+    xml_data = Net::HTTP.get_response(URI.parse(url)).body
+    doc = REXML::Document.new(xml_data)
+    semester = doc.root.elements["semester"].attributes["name"]
+    zeitraum = doc.root.elements["semester/period"].attributes["name"]
+    sid = doc.root.elements["semester"].attributes["id"]
+
+    #puts semester, sid, zeitraum
+
+    if sid == "ss"
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
+    else
+      url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
+    end
+
+ 
+    # get the XML data as a string
+    xml_data = Net::HTTP.get_response(URI.parse(url)).body
+
+    # Array with parsed strings from xml file
+    htwk_strings = []
+
+    # extract study_path information
+    doc = REXML::Document.new(xml_data)
+    doc.elements.each("studium/fakultaet/studiengang/semgrp") do |element|
+      htwk_strings.push(element.attributes["id"])
+    end
+
+
+    # filled arrays for select options
+    jahrgang = []
+    studiengang = []
+    # if no smgrp exists, default
+    seminargruppe = [""]
+    abschluss = []
+
+    # get the important string parts
+    htwk_strings.collect do |str|
+      jahrgang << str[(0..1)]
+      studiengang << str[2..str.index("-")-1]
+      abschluss << str[str.index("-")+1..str.index("-")+1]
+    end
+
+    # get list of seminargroups from string part "studiengang"
+    studiengang.collect! do |str|
+      # it´s a number?
+      if /\d+/.match(str)
+        #fill the array and remove the number from string
+        seminargruppe << $&
+        str.slice! $&
+        str
+      end
+      str
+    end
+
+    jahrgang.uniq!.sort!
+    studiengang.uniq!.sort!
+    seminargruppe.uniq!.sort!
+    abschluss.uniq!.sort!
+
+    # hash with all data
+    {"sid" => sid, "semester" => semester, "zeitraum" => zeitraum, "jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
+ 
+  rescue NoMethodError => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+    erb :error
+  rescue Errno::EHOSTUNREACH => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
+    erb :error
+  rescue Exception => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
+    erb :error
+  end
+end
+
+
+
+
 #returns an array with all calendar data
 def get_events(link)
   begin
@@ -338,8 +354,6 @@ def get_events(link)
       event.delete(8) #delete the last 2 columns "Bemerkungen" and "Gebucht am"
       event.delete(9)
     end
-   
-    events
 
   rescue OpenURI::HTTPError => e
     session['error'] = e.to_s + "<br />(Scheinbar hast du eine Kombination gewählt, die es nicht gibt)"
@@ -380,10 +394,11 @@ end
 
 #just a Hack, returns 2010 if week is > 53
 def get_year(week)
+  year ||= @htwk["semester"].scan /\d+/
   if week.to_i <= 53 then
-    return 2009
+    return year[0].to_i+1
   else
-    return 2010
+    return year[0]
   end
 end
 
@@ -395,3 +410,4 @@ def get_week(week)
   end
   week
 end
+

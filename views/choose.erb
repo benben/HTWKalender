@@ -25,8 +25,11 @@
             <td><%= html_special_char @courses[i] %></td>
           </tr>
         <% end %>
+          <tr>
+            <td colspan="2" style="background-color: #AAAAAA"></td>
+          </tr>
         <tr>
-        <td><input type="checkbox" name="chooseAll" onClick="AllSubjects(this.form)" value="1" /></td>
+        <td><input type="checkbox" name="chooseAll" onclick="AllSubjects(this.form)" value="1" /></td>
         <td><strong>Alle Veranstaltungen auswählen</strong></td>
         </tr>
       </table>
