@@ -121,12 +121,12 @@ end
 
 #returns a String which is the downloadlink
 def make_downloadlink(link,wanted,venue)
-  "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + ".ics"
+  "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + ".ics"
 end
 
 #returns a String which is the permalink
 def make_permalink(wanted,venue)
-  "http://" + request.host + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
+  "http://" + request.host + get_port + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
 end
 
 #deletes all unwanted events and returns an Array
@@ -394,11 +394,13 @@ end
 
 #just a Hack, returns 2010 if week is > 53
 def get_year(week)
-  year ||= @htwk["semester"].scan /\d+/
+  #year ||= @htwk["semester"].scan /\d+/
   if week.to_i <= 53 then
-    return year[0].to_i+1
+    2009
+    #return year[0].to_i+1
   else
-    return year[0]
+    2010
+    #return year[0]
   end
 end
 
@@ -409,5 +411,13 @@ def get_week(week)
     week -= 53
   end
   week
+end
+
+def get_port
+  if (current_port ||= Sinatra::Application.port.to_s) != "80"
+    ":"+ current_port
+  else
+   ""
+  end
 end
 
