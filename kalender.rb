@@ -35,6 +35,7 @@ end
 get '/' do
   begin
     @htwk = get_study_data
+    @@htwk = @htwk
     @e = throw_error(session['error'])
     erb :index
   rescue Exception => e
@@ -111,6 +112,8 @@ end
 
 #returns an array of ones and zeros
 def splat_to_array(splat)
+  puts splat
+  puts "___________________________-----"
   wanted = splat[0].split("/")
 
   wanted.map! do |n|
@@ -121,7 +124,7 @@ end
 
 #returns a String which is the downloadlink
 def make_downloadlink(link,wanted,venue)
-  "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + ".ics"
+  "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
 end
 
 #returns a String which is the permalink
@@ -150,7 +153,6 @@ end
 
 #returns a String for the URL
 def make_link(year,study,group,degree)
-
   #correct integration of semgrp number in string
   if study.include? "/"
     study.insert(study.index("/"), group)
@@ -158,6 +160,7 @@ def make_link(year,study,group,degree)
   else
     link = year+study+group+"-"+degree
   end
+  @@link = link
   link
 end
 
@@ -310,8 +313,11 @@ end
 
 #returns an array with all calendar data
 def get_events(link)
+  #HTWK url needs "/"
+  link = link.sub("_","/")
+
   begin
-    if (3..9).include?(Time.now.mon)
+    if @@htwk['id'] == 'ss'
       link = "http://stundenplan.htwk-leipzig.de:8080/ss/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
     else
       link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
@@ -368,7 +374,7 @@ def get_events(link)
 end
 
 #retuns an Array with Hour and Minute
-def make_time(time)  
+def make_time(time)
   time = time.split(":")
   time[0] = time[0].to_i
   time[1] = time[1].to_i
@@ -394,13 +400,11 @@ end
 
 #just a Hack, returns 2010 if week is > 53
 def get_year(week)
-  #year ||= @htwk["semester"].scan /\d+/
+  year = @@htwk["semester"].scan /\d+/
   if week.to_i <= 53 then
-    2009
-    #return year[0].to_i+1
+    year[0].to_i
   else
-    2010
-    #return year[0]
+    year[0].to_i+1
   end
 end
 
@@ -414,10 +418,10 @@ def get_week(week)
 end
 
 def get_port
-  if (current_port ||= Sinatra::Application.port.to_s) != "80"
+  current_port = Sinatra::Application.port.to_s
+  if current_port != "80"
     ":"+ current_port
   else
-   ""
+    ""
   end
 end
-
