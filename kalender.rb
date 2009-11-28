@@ -20,8 +20,10 @@ include Icalendar
 
 enable :sessions
 
-# @ ben the right way in sinatra ???
+# these helper methods are available in each erb view
 helpers do
+
+  # returns a string with encoded with html entities
   def html_special_char str
     if str.include? '&nbsp;'
       str.delete! '&nbsp;'
@@ -112,10 +114,7 @@ end
 
 #returns an array of ones and zeros
 def splat_to_array(splat)
-  puts splat
-  puts "___________________________-----"
   wanted = splat[0].split("/")
-
   wanted.map! do |n|
     n = n.to_i
   end
@@ -124,7 +123,12 @@ end
 
 #returns a String which is the downloadlink
 def make_downloadlink(link,wanted,venue)
-  "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
+  begin
+    "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
+  rescue Exception => e
+    @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
+    erb :error
+  end
 end
 
 #returns a String which is the permalink
@@ -240,14 +244,12 @@ def get_study_data
     zeitraum = doc.root.elements["semester/period"].attributes["name"]
     sid = doc.root.elements["semester"].attributes["id"]
 
-    #puts semester, sid, zeitraum
-
+    #choose right semester (season)
     if sid == "ss"
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ss.xml'
     else
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
     end
-
  
     # get the XML data as a string
     xml_data = Net::HTTP.get_response(URI.parse(url)).body
@@ -261,8 +263,6 @@ def get_study_data
       htwk_strings.push(element.attributes["id"])
     end
 
-
-    # filled arrays for select options
     jahrgang = []
     studiengang = []
     # if no smgrp exists, default
@@ -293,7 +293,7 @@ def get_study_data
     seminargruppe.uniq!.sort!
     abschluss.uniq!.sort!
 
-    # hash with all data
+    #returns hash with all data
     {"sid" => sid, "semester" => semester, "zeitraum" => zeitraum, "jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
  
   rescue NoMethodError => e
@@ -307,9 +307,6 @@ def get_study_data
     erb :error
   end
 end
-
-
-
 
 #returns an array with all calendar data
 def get_events(link)
@@ -338,10 +335,8 @@ def get_events(link)
       table.each do |row|
         n = 0
         event = Hash.new
-
         event.store(n,weekday)#add the weekday num before filling the hash with the other stuff
         n += 1
-
         (row/"td").each do |col|
           event.store(n,col.inner_html)
           n += 1
@@ -398,14 +393,21 @@ def split_weeks(week)
   a
 end
 
-#just a Hack, returns 2010 if week is > 53
+# returns the right year
 def get_year(week)
-  year = @@htwk["semester"].scan /\d+/
-  if week.to_i <= 53 then
-    year[0].to_i
-  else
-    year[0].to_i+1
+  begin
+    year = @@htwk["semester"].scan /\d+/
+    if week.to_i <= 53 then
+      year[0].to_i
+    else
+      year[0].to_i+1
+    end
+
+  rescue Exception => e
+    @e = throw_error session['error'] = e.to_s + "<br />Bitte starten deine Kalenderanfrage erneut. Sollte das Problem länger bestehen, schicke mir bitte eine Mail an:</br> ben [ätt] nerdlabor [punkt] de"
+    redirect '/'
   end
+
 end
 
 #just a Hack, change Planweeks to real CWeeks, example: 57 => 4
@@ -417,6 +419,7 @@ def get_week(week)
   week
 end
 
+# returns port of sinatra application
 def get_port
   current_port = Sinatra::Application.port.to_s
   if current_port != "80"
