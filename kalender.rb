@@ -126,7 +126,7 @@ def make_downloadlink(link,wanted,venue)
   begin
     #FIXME get_port doesnt work
     #old: "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
-    "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
+    "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" + link.sub("/","_") +".ics"
   rescue Exception => e
     @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
     erb :error
