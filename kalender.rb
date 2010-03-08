@@ -124,7 +124,9 @@ end
 #returns a String which is the downloadlink
 def make_downloadlink(link,wanted,venue)
   begin
-    "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
+    #FIXME get_port doesnt work
+    #old: "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
+    "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
   rescue Exception => e
     @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
     erb :error
@@ -133,7 +135,9 @@ end
 
 #returns a String which is the permalink
 def make_permalink(wanted,venue)
-  "http://" + request.host + get_port + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
+  #FIXME get_port doesnt work
+  #old: "http://" + request.host + get_port + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
+  "http://" + request.host + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
 end
 
 #deletes all unwanted events and returns an Array
