@@ -234,7 +234,6 @@ end
 #returns a hash with data for year, course, group and degree
 def get_study_data
   begin
-
     url = "http://stundenplan.htwk-leipzig.de:8080/stundenplan/studienjahr.xml"
     
     #get semester, semester id, time
@@ -250,7 +249,9 @@ def get_study_data
     else
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
     end
- 
+
+    
+
     # get the XML data as a string
     xml_data = Net::HTTP.get_response(URI.parse(url)).body
 
@@ -263,6 +264,8 @@ def get_study_data
       htwk_strings.push(element.attributes["id"])
     end
 
+    
+
     jahrgang = []
     studiengang = []
     # if no smgrp exists, default
@@ -271,9 +274,24 @@ def get_study_data
 
     # get the important string parts
     htwk_strings.collect do |str|
+      
       jahrgang << str[(0..1)]
-      studiengang << str[2..str.index("-")-1]
-      abschluss << str[str.index("-")+1..str.index("-")+1]
+
+      #only if str has a "-" in it, split it to studiengang and abschluss
+      #if there is no "-" then just take the whole string until the end as the studiengang (because there is no abschluss)
+      if str.include? "-"
+        studiengang << str[2..str.index("-")-1]
+        abschluss << str[str.index("-")+1..str.index("-")+1]
+      else
+        studiengang << str[2..str.length]
+      end
+
+      #only for debugging:
+      #puts i
+      #puts jahrgang.inspect
+      #puts studiengang.inspect
+      #puts abschluss.inspect
+      #i = i + 1
     end
 
     # get list of seminargroups from string part "studiengang"
@@ -295,7 +313,8 @@ def get_study_data
 
     #returns hash with all data
     {"sid" => sid, "semester" => semester, "zeitraum" => zeitraum, "jahrgang" => jahrgang, "studiengang" => studiengang, "seminargruppe" => seminargruppe, "abschluss" => abschluss}
- 
+
+  #FIXME this exceptions will never be thrown because this function is in an rescue block! see get '/' do
   rescue NoMethodError => e
     @e = throw_error session['error'] = e.to_s + "<br />(Scheinbar ist der HTWK Kalender Server nicht erreichbar.)"
     erb :error
@@ -314,12 +333,12 @@ def get_events(link)
   link = link.sub("_","/")
 
   begin
-    if @@htwk['id'] == 'ss'
-      link = "http://stundenplan.htwk-leipzig.de:8080/ss/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+    if @@htwk['sid'] == 'ss'
+      link = "http://stundenplan.htwk-leipzig.de:8080/ss/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=0-53"
     else
-      link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=36-61&days=&periods=3-52&Width=0&Height=0"
+      link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=0-53"
     end
-
+    
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")
     events = []
