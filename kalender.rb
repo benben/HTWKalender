@@ -435,9 +435,13 @@ end
 
 #just a Hack, change Planweeks to real CWeeks, example: 57 => 4
 def get_week(week)
+  #check how much cweeks the current year has
+  year = @@htwk["semester"].scan /\d+/
+  cweek_count = Date.civil(year[0].to_i,12,31).cweek
+
   week = week.to_i
-  if week > 53 then
-    week -= 53
+  if week > cweek_count then
+    week -= cweek_count
   end
   week
 end
