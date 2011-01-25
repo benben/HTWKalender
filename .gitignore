@@ -2,3 +2,4 @@ config.yml
 kalender.log
 thin.log
 thin.pid
+.bundle/

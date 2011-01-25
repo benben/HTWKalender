@@ -1,0 +1,20 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    hpricot (0.8.2)
+    htmlentities (4.2.3)
+    icalendar (1.1.5)
+    rack (1.2.1)
+    sinatra (1.1.2)
+      rack (~> 1.1)
+      tilt (~> 1.2)
+    tilt (1.2.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  hpricot (= 0.8.2)
+  htmlentities (~> 4.2.3)
+  icalendar (~> 1.1.5)
+  sinatra (~> 1.1.0)

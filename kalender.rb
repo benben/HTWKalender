@@ -1,16 +1,15 @@
 require 'rubygems'
-require 'sinatra'
-require 'hpricot'
-require 'open-uri'
-require 'icalendar'
-require 'date'
-require 'kconv'
+require 'bundler'
+Bundler.require(:default)
 
 #ruby SB, no gem needed
+require 'date'
+require 'kconv'
+require 'open-uri'
 require 'net/http'
 require 'rexml/document'
 require "jcode"
-require 'htmlentities'
+
 
 
 #important for jlength
