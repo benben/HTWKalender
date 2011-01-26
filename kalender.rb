@@ -19,6 +19,15 @@ include Icalendar
 
 enable :sessions
 
+configure :development do
+  set :base_url, ''
+end
+
+#set base_url for heroku proxy
+configure :production do
+  set :base_url, 'kalender.nerdlabor.de'
+end
+
 # these helper methods are available in each erb view
 helpers do
 
@@ -125,7 +134,8 @@ def make_downloadlink(link,wanted,venue)
   begin
     #FIXME get_port doesnt work
     #old: "http://" + request.host + get_port + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" +@@link.sub("/","_") +".ics"
-    "http://" + request.host + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" + link.sub("/","_") +".ics"
+		options.base_url = request.host if options.base_url == ''
+    "http://" + options.base_url + "/file/" + link + "/" + bool_to_str(venue) + "/" + wanted.join("/") + "/" + link.sub("/","_") +".ics"
   rescue Exception => e
     @e = throw_error session['error'] = e.to_s + "<br />(Es ist ein Fehler aufgetreten. Bitte sende mir die Fehlermeldung per Mail.)"
     erb :error
@@ -136,7 +146,8 @@ end
 def make_permalink(wanted,venue)
   #FIXME get_port doesnt work
   #old: "http://" + request.host + get_port + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
-  "http://" + request.host + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
+	options.base_url = request.host if options.base_url == ''
+  "http://" + options.base_url + request.path_info + "/" + bool_to_str(venue) + "/" + wanted.join("/")
 end
 
 #deletes all unwanted events and returns an Array
