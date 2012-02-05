@@ -26,6 +26,7 @@ end
 #set base_url for heroku proxy
 configure :production do
   set :base_url, 'kalender.nerdlabor.de'
+  require 'newrelic_rpm'
 end
 
 # these helper methods are available in each erb view
@@ -249,7 +250,7 @@ end
 def get_study_data
   begin
     url = "http://stundenplan.htwk-leipzig.de:8080/stundenplan/studienjahr.xml"
-    
+
     #get semester, semester id, time
     xml_data = Net::HTTP.get_response(URI.parse(url)).body
     doc = REXML::Document.new(xml_data)
@@ -264,7 +265,7 @@ def get_study_data
       url = 'http://stundenplan.htwk-leipzig.de:8080/stundenplan/semgrp/semgrp_ws.xml'
     end
 
-    
+
 
     # get the XML data as a string
     xml_data = Net::HTTP.get_response(URI.parse(url)).body
@@ -278,7 +279,7 @@ def get_study_data
       htwk_strings.push(element.attributes["id"])
     end
 
-    
+
 
     jahrgang = []
     studiengang = []
@@ -288,7 +289,7 @@ def get_study_data
 
     # get the important string parts
     htwk_strings.collect do |str|
-      
+
       jahrgang << str[(0..1)]
 
       #only if str has a "-" in it, split it to studiengang and abschluss
@@ -352,7 +353,7 @@ def get_events(link)
     else
       link = "http://stundenplan.htwk-leipzig.de:8080/ws/Berichte/Text-Listen;Studenten-Sets;name;#{link}?template=UNEinzelGru&weeks=0-53"
     end
-    
+
     doc = Hpricot(open(link), :xhmtl_strict)
     doc = (doc/"table[@border='1']")
     events = []
