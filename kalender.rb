@@ -9,7 +9,7 @@ require 'open-uri'
 require 'net/http'
 require 'rexml/document'
 require "jcode"
-
+require 'newrelic_rpm'
 
 
 #important for jlength
@@ -26,7 +26,6 @@ end
 #set base_url for heroku proxy
 configure :production do
   set :base_url, 'kalender.nerdlabor.de'
-  Bundler.require(:production)
 end
 
 # these helper methods are available in each erb view
