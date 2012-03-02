@@ -431,7 +431,7 @@ def get_year(week)
   begin
     year = @@htwk["semester"].scan /\d+/
     cweek_count = Date.civil(year[0].to_i,12,31).cweek
-    if week.to_i <= cweek_count then
+    if week.to_i <= cweek_count or cweek_count == 1 then
       year[0].to_i
     else
       year[0].to_i+1
