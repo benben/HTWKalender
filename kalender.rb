@@ -451,7 +451,8 @@ def get_week(week)
   cweek_count = Date.civil(year[0].to_i,12,31).cweek
 
   week = week.to_i
-  if week > cweek_count then
+
+  if week > cweek_count and cweek_count != 1 then
     week -= cweek_count
   end
   week
