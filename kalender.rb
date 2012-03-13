@@ -328,7 +328,7 @@ end
 #returns an array with all calendar data
 def get_events(link)
   #HTWK url needs "/"
-  link = link.sub("_","/")
+  link = link.sub("_","/").sub(" ", "%20")
 
   begin
     if @@htwk['sid'] == 'ss'
