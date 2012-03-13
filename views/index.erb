@@ -9,7 +9,7 @@
   <body>
 
     <%= @e %>
-    
+
     <h1>HTWK-Kalender to iCal für das <%= @htwk["semester"] %></h1>
     <p>Dieses Script wandelt den HTWK-Kalender, den ihr unter
       <a href="http://www.htwk-leipzig.de/de/studierende/online-services/lehrveranstaltungsplan/matrikel-seminargruppenplan/">http://www.htwk-leipzig.de</a>
@@ -46,10 +46,10 @@
       Man sollte Jahrgang, Studiengang und Abschluss auswählen.
       Bei manchen Studiengängen ist die Seminargruppe schon vorhanden
       (z.B. bei "AR1/VHB"). Daher sollte man, wenn man sich nicht sicher ist,
-      das Studiengangskürzel anschauen. Falls ihr überhaupt keine Ahnung
+      das Studiengangskürzel anschauen. <span style="color:red; font-weight: bold;">Falls ihr überhaupt keine Ahnung
       habt welches Kürzel ihr braucht, dann geht auf euren HTWK-Kalender und
       schaut in der Adresszeile im Browser nach.
-      Dort steht nach "name;" euer Kürzel.</p>
+      Dort steht nach "name;" euer Kürzel.</span></p>
 
     <p><%= @p %></p>
     <form method="get" action="/choose">

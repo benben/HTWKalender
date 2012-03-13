@@ -286,32 +286,16 @@ def get_study_data
     seminargruppe = [""]
     abschluss = []
 
-    # get the important string parts
     htwk_strings.collect do |str|
-
-      jahrgang << str[(0..1)]
-
-      #only if str has a "-" in it, split it to studiengang and abschluss
-      #if there is no "-" then just take the whole string until the end as the studiengang (because there is no abschluss)
-      if str.include? "-"
-        studiengang << str[2..str.index("-")-1]
-        abschluss << str[str.index("-")+1..str.index("-")+1]
-      else
-        studiengang << str[2..str.length]
-      end
-
-      #only for debugging:
-      #puts i
-      #puts jahrgang.inspect
-      #puts studiengang.inspect
-      #puts abschluss.inspect
-      #i = i + 1
+      jahrgang << str.match(/^\d{2}/)[0]
+      studiengang << str.match(/^\d{2}(.+)\-/)[1]
+      abschluss << str.match(/\-(.+)$/)[1]
     end
 
     # get list of seminargroups from string part "studiengang"
     studiengang.collect! do |str|
       # it´s a number?
-      if /\d+/.match(str)
+      if /\d+$/.match(str)
         #fill the array and remove the number from string
         seminargruppe << $&
         str.slice! $&
