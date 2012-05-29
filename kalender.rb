@@ -10,6 +10,7 @@ require 'net/http'
 require 'rexml/document'
 require "jcode"
 require 'newrelic_rpm'
+require 'digest/sha1'
 
 
 #important for jlength
@@ -224,6 +225,7 @@ def make_cal(events,link,venue)
   events.each do |event|
     event[1].each do |week|
       cal.event do
+        uid         "#{Digest::SHA1.hexdigest event.to_s}@kalender.nerdlabor.de"
         dtstart     DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[2][0], event[2][1], 0) #to calculate the Time with DateTime.commercial, we need the actual Year
         dtend       DateTime.commercial(get_year(week), get_week(week), event[0]+1, event[3][0], event[3][1], 0) #the weeknums differ from the real calenderweeknums, we fix this with the get_year and get_week function
         location    event[4]
